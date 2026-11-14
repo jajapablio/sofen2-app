@@ -1,4 +1,4 @@
-.panel { min-width: 0; padding: 22px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; }
+.panel { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 22px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; }
 .heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
 .heading h2 { margin: 0; color: #263442; font-size: 18px; }
 .heading p { margin: 6px 0 0; color: #6b7785; font-size: 12px; }
@@ -13,16 +13,18 @@
 
 .trendChart {
 	display: grid;
-	height: 190px;
-	grid-template-columns: repeat(14, minmax(0, 1fr));
+	flex: 1;
+	min-height: 280px;
+	min-width: 784px;
+	grid-template-columns: repeat(14, minmax(50px, 1fr));
 	gap: 6px;
-	margin-top: 14px;
+	margin: 0;
 }
 
 .trendColumn {
 	display: grid;
 	min-width: 0;
-	grid-template-rows: 15px minmax(0, 1fr) 16px;
+	grid-template-rows: 20px minmax(0, 1fr) 22px;
 	justify-items: center;
 	gap: 4px;
 }
@@ -32,14 +34,14 @@
 	max-width: 100%;
 	overflow: hidden;
 	color: var(--muted);
-	font-size: 7px;
+	font-size: 11px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .trendTrack {
 	display: flex;
-	width: min(100%, 16px);
+	width: min(100%, 26px);
 	height: 100%;
 	align-items: flex-end;
 	border-bottom: 1px solid var(--line);
@@ -52,4 +54,7 @@
 }
 
 
-@media (max-width: 700px) { .panel { padding: 17px; } .trendChart { gap: 3px; height: 245px; } .trendColumn > span, .trendColumn small { font-size: 6px; } }
+.chartViewport { display: flex; flex: 1; min-width: 0; min-height: 280px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 6px; }
+.chartViewport:focus-visible { outline: 2px solid #0044ff; outline-offset: 3px; }
+.chartHint { margin: 0; color: #6b7785; font-size: 11px; line-height: 1.5; }
+@media (max-width: 700px) { .panel { padding: 17px; } .trendChart, .chartViewport { min-height: 245px; } }
