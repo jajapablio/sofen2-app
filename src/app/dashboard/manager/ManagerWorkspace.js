@@ -212,20 +212,34 @@ export default function ManagerWorkspace({ requiredRole }) {
         return () => { isCurrent = false; };
     }, [refreshKey, requiredRole, router]);
 
+    useEffect(() => {
+        if (!profile?.store_id) return;
+        let current = true;
+        const refreshOrders = async () => {
+            const { data, error: orderError } = await getSupabaseClient().from('purchase_orders')
+                .select('id, store_id, product_id, suggested_quantity, status, created_at')
+                .eq('store_id', profile.store_id).order('created_at', { ascending: false }).limit(100);
+            if (current && !orderError) setPurchaseOrders(data || []);
+        };
+        const timer = window.setInterval(refreshOrders, 15000);
+        return () => { current = false; window.clearInterval(timer); };
+    }, [profile?.store_id]);
+
     const approveOrder = async (order) => {
         setUpdatingOrder(order.id);
         setActionError('');
 
         try {
             const supabase = getSupabaseClient();
-            const { error: updateError } = await supabase
+            const { data: approvedOrder, error: updateError } = await supabase
                 .from('purchase_orders')
                 .update({ status: 'approved', approved_by: profile.id })
                 .eq('id', order.id)
-                .eq('store_id', order.store_id);
+                .eq('store_id', order.store_id)
+                .eq('status', 'pending_approval').select().single();
             if (updateError) throw updateError;
             setPurchaseOrders((current) => current.map((entry) => (
-                entry.id === order.id ? { ...entry, status: 'approved' } : entry
+                entry.id === order.id ? approvedOrder : entry
             )));
         } catch (updateError) {
             setActionError(updateError.message || 'Unable to approve the purchase order.');
@@ -239,6 +253,7 @@ export default function ManagerWorkspace({ requiredRole }) {
         setActionError('');
 
         try {
+            if (!newOrderProductId || !Number.isInteger(Number(newOrderQuantity)) || Number(newOrderQuantity) < 1) throw new Error('Choose a product and enter a positive whole-number quantity.');
             const supabase = getSupabaseClient();
             const { data, error: insertError } = await supabase
                 .from('purchase_orders')
@@ -247,11 +262,13 @@ export default function ManagerWorkspace({ requiredRole }) {
                     product_id: newOrderProductId,
                     suggested_quantity: Number(newOrderQuantity),
                     status: 'pending_approval',
+                    generated_by_ml: false,
                 })
                 .select()
                 .maybeSingle();
 
             if (insertError) throw insertError;
+            if (!data) throw new Error('The order was not saved. Refresh and try again.');
 
             setPurchaseOrders((current) => [data, ...current]);
             setShowCreateOrderForm(false);
@@ -459,11 +476,6 @@ export default function ManagerWorkspace({ requiredRole }) {
                                             {creatingOrder ? 'Creating…' : 'Create Purchase Order'}
                                         </button>
                                     </div>
-                                    {profile?.role !== 'admin' && (
-                                        <p className={styles.formFeedback}>
-                                            Managers create purchase orders. Admins approve them. Orders appear as Pending Approval until an admin reviews them.
-                                        </p>
-                                    )}
                                     <DataTable
                                         columns={[
                                             { key: 'created_at', label: 'Created', render: (order) => dateTime(order.created_at) },

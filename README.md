@@ -79,3 +79,7 @@ Scan a freshly generated QR using the deployed HTTPS site. Test invalid, expired
 Open the production HTTPS domain in Chrome or Edge and choose Install app (or the browser menu → Install app / Add to Home screen). The login page offers installation when the browser supports it. On iPhone/iPad, open the site in Safari → Share → Add to Home Screen. Installed launches open the login/home route in a standalone window.
 
 The service worker caches only the offline page and public icons. Account pages, API calls, Supabase responses, inventory and payments are never cached by the service worker or queued for offline submission. Internet access is required for sales and payment processing. Installation availability depends on the browser; the development server does not register the worker.
+
+### Purchase order approval
+
+Optional permission hardening (not yet applied; requires approval): run `supabase/purchase_order_approvals.sql` to replace permissive purchase-order policies with store-scoped reads/requests and admin-only approval. Managers create manual orders with `generated_by_ml=false`. Admin → Inventory lists the assigned store’s orders with Approve order actions and a pending navigation count. Both dashboards refresh order statuses every 15 seconds; approval does not receive stock or increase inventory.

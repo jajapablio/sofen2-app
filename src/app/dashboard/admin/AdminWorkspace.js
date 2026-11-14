@@ -53,6 +53,9 @@ export default function AdminWorkspace() {
     const [stores, setStores] = useState([]);
     const [staff, setStaff] = useState([]);
     const [products, setProducts] = useState([]);
+    const [purchaseOrders, setPurchaseOrders] = useState([]);
+    const [orderError, setOrderError] = useState('');
+    const [approvingOrder, setApprovingOrder] = useState('');
     const [sales, setSales] = useState([]);
     const [highRiskSales, setHighRiskSales] = useState([]);
     const [devices, setDevices] = useState([]);
@@ -149,6 +152,7 @@ export default function AdminWorkspace() {
                     supabase.from('audit_logs').select('id, actor_id, store_id, action, entity_table, entity_id, changed_at, before_data, after_data').eq('store_id', storeId).order('changed_at', { ascending: false }).limit(200),
                     salesForecastsQuery,
                     stockAlertsQuery,
+                    supabase.from('purchase_orders').select('id, store_id, product_id, suggested_quantity, status, approved_by, created_at').eq('store_id', storeId).order('created_at', { ascending: false }).limit(100),
                 ]);
                 const failed = results.find((result) => result.error);
                 if (failed) throw failed.error;
@@ -169,6 +173,7 @@ export default function AdminWorkspace() {
                 setAuditLogs(results[9].data || []);
                 setSalesForecasts(results[10].data || []);
                 setStockAlerts(results[11].data || []);
+                setPurchaseOrders(results[12].data || []);
             } catch (loadError) {
                 if (isCurrent) setError(loadError.message || 'Unable to load store data.');
             } finally {
@@ -213,6 +218,37 @@ export default function AdminWorkspace() {
         loadPayments();
         return () => { isCurrent = false; };
     }, [activeSection, profile?.store_id, refreshKey, simulatedPaymentFilters, simulatedPaymentPage]);
+
+    useEffect(() => {
+        if (!profile?.store_id) return;
+        let current = true;
+        const refreshOrders = async () => {
+            const { data, error: loadError } = await getSupabaseClient().from('purchase_orders')
+                .select('id, store_id, product_id, suggested_quantity, status, approved_by, created_at')
+                .eq('store_id', profile.store_id).order('created_at', { ascending: false }).limit(100);
+            if (current) {
+                if (loadError) setOrderError(loadError.message);
+                else { setPurchaseOrders(data || []); setOrderError(''); }
+            }
+        };
+        const timer = window.setInterval(refreshOrders, 15000);
+        return () => { current = false; window.clearInterval(timer); };
+    }, [profile?.store_id]);
+
+    const approvePurchaseOrder = async (order) => {
+        setApprovingOrder(order.id);
+        setOrderError('');
+        try {
+            const { data, error: approvalError } = await getSupabaseClient().from('purchase_orders')
+                .update({ status: 'approved', approved_by: profile.id, updated_at: new Date().toISOString() })
+                .eq('id', order.id).eq('store_id', profile.store_id).eq('status', 'pending_approval')
+                .select('id, store_id, product_id, suggested_quantity, status, approved_by, created_at').single();
+            if (approvalError) throw approvalError;
+            setPurchaseOrders((orders) => orders.map((entry) => entry.id === data.id ? data : entry));
+        } catch (failure) { setOrderError(failure.message || 'Unable to approve this order. Refresh and try again.'); }
+        finally { setApprovingOrder(''); }
+    };
+    const pendingOrderCount = purchaseOrders.filter((order) => order.status === 'pending_approval').length;
 
     const storeNames = useMemo(() => new Map(stores.map((store) => [store.id, store.name])), [stores]);
     const profileNames = useMemo(() => new Map(staff.map((member) => [member.id, member.full_name])), [staff]);
@@ -540,7 +576,7 @@ export default function AdminWorkspace() {
                                     setActiveSection(item.id);
                                     setIsNavigationOpen(false);
                                 }}>
-                                    <i className={`fas ${item.icon}`} aria-hidden="true" /> {item.label}
+                                    <i className={`fas ${item.icon}`} aria-hidden="true" /> {item.label}{item.id === 'inventory' && pendingOrderCount > 0 && <span className={styles.pendingOrderBadge}>{pendingOrderCount} pending</span>}
                                 </button>
                             ))}
                         </nav>
@@ -618,6 +654,17 @@ export default function AdminWorkspace() {
 
                         {activeSection === 'inventory' && (
                             <div className={styles.sectionStack}>
+                                <section className={styles.panel} aria-label="Purchase orders">
+                                    <div className={styles.panelHeading}><div><h2>Purchase orders</h2><p>{pendingOrderCount} pending approval</p></div></div>
+                                    {orderError && <p className={styles.errorState} role="alert">{orderError}</p>}
+                                    <DataTable columns={[
+                                        { key: 'created_at', label: 'Created', render: (order) => dateTime(order.created_at) },
+                                        { key: 'product_id', label: 'Product', render: (order) => products.find((product) => product.id === order.product_id)?.name || 'Unavailable product' },
+                                        { key: 'suggested_quantity', label: 'Quantity' },
+                                        { key: 'status', label: 'Status', render: (order) => order.status === 'pending_approval' ? 'Pending approval' : order.status.replaceAll('_', ' ') },
+                                        { key: 'action', label: 'Action', render: (order) => order.status === 'pending_approval' ? <button type="button" className={styles.primaryButton} disabled={Boolean(approvingOrder)} onClick={() => approvePurchaseOrder(order)}>{approvingOrder === order.id ? 'Approving…' : 'Approve order'}</button> : '—' },
+                                    ]} rows={purchaseOrders} emptyMessage="No purchase orders for this store." />
+                                </section>
                                 <section className={styles.panel}>
                                     <div className={styles.panelHeading}><div><h2>Master SKU registry</h2><p>Products for your assigned store</p></div><div className={styles.toolbar}><button className={styles.secondaryButton} type="button" onClick={exportProducts}>Export CSV</button><label className={styles.fileButton}>Import CSV<input type="file" accept=".csv,text/csv" onChange={importProducts} /></label><button className={styles.primaryButton} type="button" onClick={() => { setSelectedProductImage(''); setProductForm({}); }}>Add product</button></div></div>
                                     <DataTable
