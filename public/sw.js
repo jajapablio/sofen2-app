@@ -1,6 +1,6 @@
 /* Cache only the offline fallback and public icons. Never cache account pages or APIs. */
-const CACHE = 'predictpos-offline-v1';
-const ASSETS = ['/offline.html', '/logos/android-chrome-192x192.png', '/logos/android-chrome-512x512.png'];
+const CACHE = 'predictpos-offline-v2';
+const ASSETS = ['/offline.html', '/logos/app-blue-192.png', '/logos/app-blue-512.png'];
 self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

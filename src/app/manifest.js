@@ -5,8 +5,8 @@ export default function manifest() {
         start_url: '/', scope: '/', display: 'standalone',
         background_color: '#f5f7fb', theme_color: '#0044ff',
         icons: [
-            { src: '/logos/android-chrome-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: '/logos/android-chrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: '/logos/app-blue-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: '/logos/app-blue-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
     };
 }

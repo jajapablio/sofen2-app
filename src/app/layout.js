@@ -5,7 +5,7 @@ export const metadata = {
   title: 'PredictPOS',
   applicationName: 'PredictPOS',
   appleWebApp: { capable: true, title: 'PredictPOS', statusBarStyle: 'default' },
-  icons: { apple: '/logos/apple-touch-icon.png', icon: '/logos/favicon-32x32.png' },
+  icons: { apple: '/logos/app-blue-180.png', icon: '/logos/favicon-32x32.png' },
   description: 'An automated point-of-sale and inventory control system using predictive analysis for sales forecasting.',
 };
 
