@@ -867,27 +867,22 @@
 	}
 }
 
-/* Keep alert copy aligned and fill both halves of the overview. */
-.grid > .chartCard { grid-column: 1 / -1; }
-.automationCard { grid-column: span 2; display: flex; flex-direction: column; gap: 16px; }
+/* Keep alert copy aligned and use the available overview width. */
+.grid > .chartCard, .grid > .alertsCard { grid-column: span 2; }
+@media (min-width: 701px) and (max-width: 1100px) {
+    .grid > .chartCard, .grid > .alertsCard { grid-column: span 1; }
+}
+@media (max-width: 700px) {
+    .grid > .chartCard, .grid > .alertsCard { grid-column: 1 / -1; }
+}
 .stackedHeader { display: flex; flex-direction: column; gap: 4px; }
 .stackedHeader h2, .stackedHeader p { margin: 0; }
 .stackedHeader .cardTitle { font-size: 14px; }
 .stackedHeader .cardSubtitle { line-height: 1.6; }
-.automationStatus { align-self: flex-start; padding: 6px 10px; border-radius: 20px; background: #edf3ff; color: #214bb0; font-size: 12px; font-weight: 600; }
-.forecastDetails { display: grid; gap: 12px; margin: 0; font-size: 12px; }
-.forecastDetails > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
-.forecastDetails dt { color: var(--muted); }
-.forecastDetails dd { margin: 0; color: var(--ink); }
-.automationCard button { align-self: flex-start; margin-top: auto; }
 .alertsCard .dataRow { align-items: flex-start; flex-wrap: wrap; }
 .alertsCard .dataRow > div { min-width: 0; overflow-wrap: anywhere; }
-@media (max-width: 700px) { .automationCard { grid-column: 1 / -1; } }
 
 .barChart { grid-template-columns: repeat(14, minmax(58px, 1fr)); overflow-x: auto; padding-bottom: 8px; }
-@media (min-width: 701px) and (max-width: 1100px) {
-    .grid > .alertsCard, .automationCard { grid-column: span 1; }
-}
 
 .salesChartHeader { flex-wrap: wrap; align-items: center; }
 .salesChartHeader h2, .salesChartHeader p { margin: 0; }
@@ -897,6 +892,9 @@
 .chartSwitch button[aria-pressed="true"] { background: var(--primary); color: white; }
 .chartSwitch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
-.tomorrowForecast { min-height: 245px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px 0; text-align: center; }
-.tomorrowAmount { color: var(--primary); font-size: clamp(32px, 5vw, 52px); line-height: 1.2; overflow-wrap: anywhere; max-width: 100%; }
-.forecastExplanation { max-width: 440px; margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+.centeredSalesChart { grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; gap: clamp(3px, 1vw, 12px); }
+.todayColumn { border-radius: 6px; background: #edf5f4; outline: 1px solid #a2d2c8; }
+.todayColumn .barLabel { color: #00695c; font-weight: 700; }
+.centeredSalesChart .barLabel { font-size: clamp(8px, 1.6vw, 11px); }
+.chartFooter { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 10px; }
