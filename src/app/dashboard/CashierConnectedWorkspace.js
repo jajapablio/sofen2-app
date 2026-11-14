@@ -284,7 +284,7 @@ export default function CashierConnectedWorkspace() {
             return;
         }
         if (paymentMethod === 'card' && !['TEST-CARD-001', 'TEST-CARD-002', 'TEST-CARD-003'].includes(testCardIdentifier)) {
-            setPaymentError('Choose one of the fictional test card identifiers.');
+            setPaymentError('Choose a test card.');
             return;
         }
         if (!Number.isFinite(discountRate) || discountRate < 0 || discountRate > 100) {
@@ -324,7 +324,7 @@ export default function CashierConnectedWorkspace() {
                     }),
                 });
                 const createResult = await createResponse.json();
-                if (!createResponse.ok) throw new Error(createResult.error || 'Unable to start the simulated payment.');
+                if (!createResponse.ok) throw new Error(createResult.error || 'Unable to start payment.');
                 activePayment = createResult.payment;
                 window.sessionStorage.setItem('predictpos-demo-payment-id', activePayment.id);
                 setPaymentRecord(activePayment);
@@ -337,7 +337,7 @@ export default function CashierConnectedWorkspace() {
                 body: JSON.stringify({ testCardIdentifier: paymentMethod === 'card' ? testCardIdentifier : null }),
             });
             const confirmResult = await confirmResponse.json();
-            if (!confirmResponse.ok) throw new Error(confirmResult.error || 'Unable to confirm simulated payment.');
+            if (!confirmResponse.ok) throw new Error(confirmResult.error || 'Unable to confirm payment.');
             const outcome = confirmResult.result;
             window.sessionStorage.setItem('predictpos-demo-payment-id', activePayment.id);
             setPaymentOutcome(outcome);
@@ -356,12 +356,12 @@ export default function CashierConnectedWorkspace() {
                 setCashReceived('');
                 setReloadKey((current) => current + 1);
             } else if (outcome.status === 'failed') {
-                setPaymentError(outcome.failure_reason || 'The simulated payment failed.');
+                setPaymentError(outcome.failure_reason || 'Payment failed.');
             } else if (outcome.status === 'expired') {
                 setPaymentError('This payment expired. Start a new payment to continue.');
             }
         } catch (paymentRequestError) {
-            setPaymentError(paymentRequestError.message || 'Unable to complete this simulated payment.');
+            setPaymentError(paymentRequestError.message || 'Unable to complete payment.');
         } finally {
             setIsSubmitting(false);
         }
@@ -676,25 +676,25 @@ export default function CashierConnectedWorkspace() {
                         <i className="fas fa-credit-card" aria-hidden="true" /> Record payment
                     </button>
                 </div>
-                <p className="paymentDisclosure"><ShieldCheck size={13} /> TEST MODE · Simulated payment only. No real money is transferred.</p>
+                <p className="paymentDisclosure"><ShieldCheck size={13} /> Test mode</p>
             </aside>
 
             {isPaymentOpen && (
                 <div className="overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && paymentRecord?.status !== 'pending' && setIsPaymentOpen(false)}>
                     <section className="dialog" role="dialog" aria-modal="true" aria-labelledby="payment-title">
                         <div className="dialogHeader">
-                            <div><p className="eyebrow">TEST MODE · NO REAL MONEY</p><h2 id="payment-title">Simulated checkout</h2></div>
+                            <div><p className="eyebrow">Test mode</p><h2 id="payment-title">Checkout</h2></div>
                             <button type="button" onClick={() => setIsPaymentOpen(false)} aria-label="Close" disabled={isSubmitting || paymentRecord?.status === 'pending'}>×</button>
                         </div>
                         <div className="dialogBody">
                             {paymentOutcome?.status === 'paid_simulated' ? (
                                 <div className="paymentReceiptSummary">
                                     <h3><CheckCircle2 size={19} /> Payment successful</h3>
-                                    <p className="receiptDisclosure">DEMO TRANSACTION — NO REAL MONEY WAS TRANSFERRED.</p>
+                                    <p className="receiptDisclosure">Test receipt</p>
                                     <div className="paymentReceiptDetails">
                                         <span>Reference<strong>{paymentRecord?.transaction_reference}</strong></span>
                                         <span>Receipt<strong>{paymentRecord?.receipt_number || paymentOutcome.receipt_number || '—'}</strong></span>
-                                        <span>Method<strong>{paymentMethod === 'qrph' ? 'QRPH' : paymentMethod === 'card' ? 'Card' : 'Cash'} · Simulated</strong></span>
+                                        <span>Method<strong>{paymentMethod === 'qrph' ? 'QRPH' : paymentMethod === 'card' ? 'Card' : 'Cash'}</strong></span>
                                         <span>Amount<strong>{money(paymentRecord?.amount ?? paymentOutcome.amount)}</strong></span>
                                         <span>Date<strong>{new Date(paymentRecord?.completed_at || paymentOutcome.completed_at || paymentRecord?.created_at).toLocaleString()}</strong></span>
                                     </div>
@@ -725,8 +725,8 @@ export default function CashierConnectedWorkspace() {
                                     )}
                                     {paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && (
                                         <div className="qrPaymentPanel">
-                                            <QRCodeSVG value={`${siteOrigin}/pay/demo/${paymentRecord.id}`} size={180} level="M" includeMargin aria-label="QRPH demo payment code" />
-                                            <p><QrCode size={14} /> Scan to open the internal demo payment page</p>
+                                            <QRCodeSVG value={`${siteOrigin}/pay/demo/${paymentRecord.id}`} size={180} level="M" includeMargin aria-label="QRPH payment code" />
+                                            <p><QrCode size={14} /> Scan to open the payment page</p>
                                             <div><span>Transaction reference</span><strong>{paymentRecord.transaction_reference}</strong></div>
                                             <div><span>Amount</span><strong>{money(paymentRecord.amount)}</strong></div>
                                             <div className="qrCountdown">Expires in <strong>{Math.floor(qrSeconds / 60)}:{String(qrSeconds % 60).padStart(2, '0')}</strong></div>
@@ -735,21 +735,21 @@ export default function CashierConnectedWorkspace() {
                                     )}
                                     {paymentMethod === 'card' && (
                                         <div className="demoCardFields">
-                                            <p><CreditCard size={15} /> Fictional card · TEST MODE</p>
-                                            <label>Cardholder name<input value="DEMO CUSTOMER" readOnly /></label>
-                                            <label>Test card identifier
+                                            <p><CreditCard size={15} /> Test card</p>
+                                            <label>Cardholder name<input value="TEST CUSTOMER" readOnly /></label>
+                                            <label>Card
                                                 <select value={testCardIdentifier} onChange={(event) => setTestCardIdentifier(event.target.value)}>
-                                                    <option value="TEST-CARD-001">TEST-CARD-001 · Successful</option>
-                                                    <option value="TEST-CARD-002">TEST-CARD-002 · Declined</option>
-                                                    <option value="TEST-CARD-003">TEST-CARD-003 · Insufficient funds</option>
+                                                    <option value="TEST-CARD-001">Test card 001 · Approved</option>
+                                                    <option value="TEST-CARD-002">Test card 002 · Declined</option>
+                                                    <option value="TEST-CARD-003">Test card 003 · Insufficient funds</option>
                                                 </select>
                                             </label>
-                                            <label>Expiration<input value="12/30 · Simulated" readOnly /></label>
+                                            <label>Expiration<input value="12/30" readOnly /></label>
                                             <small>No actual card number, CVV, or banking details are requested or stored.</small>
                                         </div>
                                     )}
                                     {paymentRecord?.status === 'failed' && (
-                                        <p className="paymentError" role="alert">{paymentRecord.failure_reason || paymentError || 'The simulated payment failed. Choose another test scenario to retry.'}</p>
+                                        <p className="paymentError" role="alert">{paymentRecord.failure_reason || paymentError || 'Payment failed. Choose another card to retry.'}</p>
                                     )}
                                     {paymentRecord?.status === 'expired' && <p className="paymentError" role="alert">This payment expired. Start a new payment to continue.</p>}
                                     {paymentError && paymentRecord?.status !== 'failed' && paymentRecord?.status !== 'expired' && <p className="paymentError" role="alert">{paymentError}</p>}
@@ -758,7 +758,7 @@ export default function CashierConnectedWorkspace() {
                                             {paymentRecord?.status === 'pending' ? 'Cancel payment' : 'Close'}
                                         </button>
                                         <button className="primaryButton" type="button" onClick={recordSale} disabled={isSubmitting || (paymentMethod === 'cash' && received < total) || (paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && qrSeconds === 0)}>
-                                            {isSubmitting ? 'Processing…' : paymentMethod === 'qrph' ? paymentRecord?.status === 'pending' ? 'Simulate Payment' : 'Create QR payment' : paymentMethod === 'card' ? 'Simulate Card Payment' : 'Simulate Cash Payment'}
+                                            {isSubmitting ? 'Processing…' : paymentMethod === 'qrph' ? paymentRecord?.status === 'pending' ? 'Confirm payment' : 'Create QR payment' : paymentMethod === 'card' ? 'Pay by card' : 'Complete payment'}
                                         </button>
                                     </div>
                                 </>
@@ -769,12 +769,12 @@ export default function CashierConnectedWorkspace() {
             )}
             {paymentOutcome?.status === 'paid_simulated' && (
                 <div className="printReceipt">
-                    <h1>PredictPOS simulated receipt</h1>
-                    <p><strong>DEMO TRANSACTION — NO REAL MONEY WAS TRANSFERRED.</strong></p>
+                    <h1>PredictPOS receipt</h1>
+                    <p><strong>Test receipt</strong></p>
                     <hr />
                     <p><span>Reference</span><strong>{paymentRecord?.transaction_reference}</strong></p>
                     <p><span>Receipt</span><strong>{paymentRecord?.receipt_number || paymentOutcome.receipt_number || '—'}</strong></p>
-                    <p><span>Method</span><strong>{paymentMethod === 'qrph' ? 'QRPH' : paymentMethod === 'card' ? 'Card' : 'Cash'} · Simulated</strong></p>
+                    <p><span>Method</span><strong>{paymentMethod === 'qrph' ? 'QRPH' : paymentMethod === 'card' ? 'Card' : 'Cash'}</strong></p>
                     <p><span>Amount</span><strong>{money(paymentRecord?.amount ?? paymentOutcome.amount)}</strong></p>
                     <p><span>Date</span><strong>{new Date(paymentRecord?.completed_at || paymentOutcome.completed_at || paymentRecord?.created_at).toLocaleString()}</strong></p>
                 </div>

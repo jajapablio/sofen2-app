@@ -79,7 +79,7 @@ export default function PaymentDemoPage({ paymentId }) {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Unable to confirm this payment.');
-            if (result.result?.status === 'failed') setError(result.result.failure_reason || 'The simulated payment failed.');
+            if (result.result?.status === 'failed') setError(result.result.failure_reason || 'Payment failed.');
             await loadPayment(accessToken);
         } catch (confirmError) {
             setError(confirmError.message || 'Network error. Refresh to check the latest payment status.');
@@ -118,9 +118,9 @@ export default function PaymentDemoPage({ paymentId }) {
                 <span><ShieldCheck size={15} /> TEST MODE</span>
             </header>
             <section className={styles.panel}>
-                <p className={styles.eyebrow}>PREDICTPOS · QRPH DEMO</p>
+                <p className={styles.eyebrow}>PREDICTPOS · QRPH</p>
                 <h1>{isPaid ? 'Payment confirmed' : isFailed ? 'Payment not completed' : 'Confirm QRPH payment'}</h1>
-                <p className={styles.disclosure}>DEMO TRANSACTION · NO REAL MONEY WILL BE TRANSFERRED</p>
+                <p className={styles.disclosure}>Test mode</p>
 
                 {loading ? <p className={styles.message}>Loading payment status…</p> : error && !payment ? <div className={styles.error} role="alert">{error}</div> : null}
                 {!loading && payment && isWrongMethod && <div className={styles.error} role="alert">This internal link is not a QRPH payment.</div>}
@@ -129,23 +129,23 @@ export default function PaymentDemoPage({ paymentId }) {
                         <div className={styles.amount}><span>Amount due</span><strong>{money(payment.amount)}</strong></div>
                         <dl className={styles.details}>
                             <div><dt>Reference</dt><dd>{payment.transaction_reference}</dd></div>
-                            <div><dt>Method</dt><dd>QRPH · Simulated</dd></div>
-                            <div><dt>Status</dt><dd>{isPaid ? 'Paid (Simulated)' : payment.status}</dd></div>
+                            <div><dt>Method</dt><dd>QRPH</dd></div>
+                            <div><dt>Status</dt><dd>{isPaid ? 'Paid' : payment.status}</dd></div>
                         </dl>
                         {payment.status === 'pending' && (
                             <>
                                 <p className={styles.countdown}><Clock3 size={16} /> Expires in <strong>{countdown}</strong></p>
                                 {remaining === 0 && <p className={styles.message}>This QR payment has expired.</p>}
                                 <button className={styles.primaryButton} type="button" onClick={confirmPayment} disabled={processing || remaining === 0}>
-                                    {processing ? 'Processing…' : 'Simulate Payment'}
+                                    {processing ? 'Processing…' : 'Confirm payment'}
                                 </button>
                                 <button className={styles.cancelButton} type="button" onClick={cancelPayment} disabled={processing}>Cancel payment</button>
                             </>
                         )}
                         {isPaid && (
                             <section className={styles.receipt}>
-                                <h2><CheckCircle2 size={19} /> Simulated receipt</h2>
-                                <p className={styles.warning}>DEMO TRANSACTION — NO REAL MONEY WAS TRANSFERRED.</p>
+                                <h2><CheckCircle2 size={19} /> Payment receipt</h2>
+                                <p className={styles.warning}>Test receipt</p>
                                 <dl className={styles.details}>
                                     <div><dt>Receipt</dt><dd>{payment.receipt_number || '—'}</dd></div>
                                     <div><dt>Transaction date</dt><dd>{new Date(payment.completed_at || payment.created_at).toLocaleString()}</dd></div>

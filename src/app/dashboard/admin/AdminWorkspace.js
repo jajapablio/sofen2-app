@@ -21,7 +21,7 @@ const navigation = [
     { id: 'inventory', label: 'Inventory', icon: 'fa-boxes' },
     { id: 'suppliers', label: 'Store Suppliers', icon: 'fa-truck' },
     { id: 'reports', label: 'Sales & Reports', icon: 'fa-chart-line' },
-    { id: 'payments', label: 'Simulated Payments', icon: 'fa-qrcode' },
+    { id: 'payments', label: 'Payments', icon: 'fa-qrcode' },
     { id: 'security', label: 'Security & Audit', icon: 'fa-shield-alt' },
     { id: 'settings', label: 'Store Settings', icon: 'fa-sliders-h' },
 ];
@@ -199,13 +199,13 @@ export default function AdminWorkspace() {
                     cache: 'no-store',
                 });
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.error || 'Unable to load simulated payments.');
+                if (!response.ok) throw new Error(result.error || 'Unable to load payments.');
                 if (!isCurrent) return;
                 setSimulatedPayments(result.payments || []);
                 setSimulatedPaymentMetrics(result.metrics || null);
                 setSimulatedPaymentCount(result.count || 0);
             } catch (paymentLoadError) {
-                if (isCurrent) setSimulatedPaymentError(paymentLoadError.message || 'Unable to load simulated payments.');
+                if (isCurrent) setSimulatedPaymentError(paymentLoadError.message || 'Unable to load payments.');
             } finally {
                 if (isCurrent) setSimulatedPaymentLoading(false);
             }
@@ -405,7 +405,7 @@ export default function AdminWorkspace() {
                 cache: 'no-store',
             });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Unable to export simulated payments.');
+            if (!response.ok) throw new Error(result.error || 'Unable to export payments.');
             const csv = Papa.unparse(result.payments.map((payment) => ({
                 transaction_reference: payment.transaction_reference,
                 receipt_number: payment.receipt_number || '',
@@ -413,18 +413,18 @@ export default function AdminWorkspace() {
                 completed_at: payment.completed_at || '',
                 payment_method: payment.payment_method.toUpperCase(),
                 amount_php: payment.amount,
-                status: payment.status === 'paid_simulated' ? 'Paid (Simulated)' : payment.status,
+                status: payment.status === 'paid_simulated' ? 'Paid' : payment.status,
                 failure_reason: payment.failure_reason || '',
-                disclosure: 'DEMO TRANSACTION - NO REAL MONEY WAS TRANSFERRED',
+                disclosure: 'Test transaction',
             })));
             const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'predictpos-simulated-payments.csv';
+            link.download = 'predictpos-test-payments.csv';
             link.click();
             URL.revokeObjectURL(url);
         } catch (exportError) {
-            setSimulatedPaymentError(exportError.message || 'Unable to export simulated payments.');
+            setSimulatedPaymentError(exportError.message || 'Unable to export payments.');
         }
     };
 
@@ -700,14 +700,14 @@ export default function AdminWorkspace() {
                         {activeSection === 'payments' && (
                             <div className={styles.sectionStack}>
                                 <div className={styles.metricGrid}>
-                                    <section className={styles.metricCard}><span>Simulated revenue</span><strong>{money(simulatedPaymentMetrics?.simulated_revenue)}</strong><small>Paid (Simulated) transactions only · not financial revenue</small></section>
-                                    <section className={styles.metricCard}><span>Successful</span><strong>{Number(simulatedPaymentMetrics?.successful_count || 0).toLocaleString()}</strong><small>Paid (Simulated)</small></section>
-                                    <section className={styles.metricCard}><span>Pending</span><strong>{Number(simulatedPaymentMetrics?.pending_count || 0).toLocaleString()}</strong><small>Awaiting demo confirmation</small></section>
+                                    <section className={styles.metricCard}><span>Test payment total</span><strong>{money(simulatedPaymentMetrics?.simulated_revenue)}</strong><small>Test transactions only</small></section>
+                                    <section className={styles.metricCard}><span>Successful</span><strong>{Number(simulatedPaymentMetrics?.successful_count || 0).toLocaleString()}</strong><small>Paid</small></section>
+                                    <section className={styles.metricCard}><span>Pending</span><strong>{Number(simulatedPaymentMetrics?.pending_count || 0).toLocaleString()}</strong><small>Awaiting confirmation</small></section>
                                     <section className={styles.metricCard}><span>Failed</span><strong>{Number(simulatedPaymentMetrics?.failed_count || 0).toLocaleString()}</strong><small>Declined or invalid test attempts</small></section>
                                 </div>
                                 <section className={styles.panel}>
                                     <div className={styles.panelHeading}>
-                                        <div><h2>Payment simulator ledger</h2><p>TEST MODE · Separate from completed sales and real financial records</p></div>
+                                        <div><h2>Payment ledger</h2><p>Test mode</p></div>
                                         <div className={styles.toolbar}>
                                             <button className={styles.secondaryButton} type="button" onClick={exportSimulatedPayments} disabled={simulatedPaymentLoading}>Export CSV</button>
                                             <button className={styles.secondaryButton} type="button" onClick={() => setRefreshKey((current) => current + 1)} disabled={simulatedPaymentLoading}>Refresh</button>
@@ -715,13 +715,13 @@ export default function AdminWorkspace() {
                                     </div>
                                     <div className={styles.paymentFilters}>
                                         <label>Reference<input value={simulatedPaymentFilters.reference} onChange={(event) => { setSimulatedPaymentPage(1); setSimulatedPaymentFilters((current) => ({ ...current, reference: event.target.value })); }} placeholder="Search reference" /></label>
-                                        <label>Status<select value={simulatedPaymentFilters.status} onChange={(event) => { setSimulatedPaymentPage(1); setSimulatedPaymentFilters((current) => ({ ...current, status: event.target.value })); }}><option value="">All statuses</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="paid_simulated">Paid (Simulated)</option><option value="failed">Failed</option><option value="canceled">Canceled</option><option value="expired">Expired</option></select></label>
+                                        <label>Status<select value={simulatedPaymentFilters.status} onChange={(event) => { setSimulatedPaymentPage(1); setSimulatedPaymentFilters((current) => ({ ...current, status: event.target.value })); }}><option value="">All statuses</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="paid_simulated">Paid</option><option value="failed">Failed</option><option value="canceled">Canceled</option><option value="expired">Expired</option></select></label>
                                         <label>Method<select value={simulatedPaymentFilters.method} onChange={(event) => { setSimulatedPaymentPage(1); setSimulatedPaymentFilters((current) => ({ ...current, method: event.target.value })); }}><option value="">All methods</option><option value="cash">Cash</option><option value="qrph">QRPH</option><option value="card">Card</option></select></label>
                                         <label>From<input type="date" value={simulatedPaymentFilters.from} onChange={(event) => { setSimulatedPaymentPage(1); setSimulatedPaymentFilters((current) => ({ ...current, from: event.target.value })); }} /></label>
                                         <label>To<input type="date" value={simulatedPaymentFilters.to} onChange={(event) => { setSimulatedPaymentPage(1); setSimulatedPaymentFilters((current) => ({ ...current, to: event.target.value })); }} /></label>
                                     </div>
                                     {simulatedPaymentError && <p className={styles.errorState} role="alert">{simulatedPaymentError}</p>}
-                                    {simulatedPaymentLoading ? <p className={styles.loadingState}>Loading simulated payments…</p> : (
+                                    {simulatedPaymentLoading ? <p className={styles.loadingState}>Loading payments…</p> : (
                                         <DataTable
                                             columns={[
                                                 { key: 'transaction_reference', label: 'Reference' },
@@ -730,11 +730,11 @@ export default function AdminWorkspace() {
                                                 { key: 'completed_at', label: 'Completed', render: (payment) => dateTime(payment.completed_at) },
                                                 { key: 'payment_method', label: 'Method', render: (payment) => payment.payment_method.toUpperCase() },
                                                 { key: 'amount', label: 'Amount · PHP', render: (payment) => money(payment.amount) },
-                                                { key: 'status', label: 'Status', render: (payment) => <span className={payment.status === 'paid_simulated' ? styles.activeBadge : payment.status === 'failed' ? styles.inactiveBadge : styles.roleBadge}>{payment.status === 'paid_simulated' ? 'Paid (Simulated)' : payment.status}</span> },
+                                                { key: 'status', label: 'Status', render: (payment) => <span className={payment.status === 'paid_simulated' ? styles.activeBadge : payment.status === 'failed' ? styles.inactiveBadge : styles.roleBadge}>{payment.status === 'paid_simulated' ? 'Paid' : payment.status}</span> },
                                                 { key: 'failure_reason', label: 'Details', render: (payment) => payment.failure_reason || '—' },
                                             ]}
                                             rows={simulatedPayments}
-                                            emptyMessage="No simulated transactions match these filters."
+                                            emptyMessage="No transactions match these filters."
                                         />
                                     )}
                                     <div className={styles.paymentPagination}>
