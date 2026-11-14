@@ -23,10 +23,11 @@ const tabs = [
 
 function DataTable({ columns, rows, emptyMessage }) {
     if (!rows.length) return <p className={styles.emptyState}>{emptyMessage}</p>;
+    const stickyActions = ['action', 'actions', 'account_action'].includes(columns.at(-1)?.key);
 
     return (
         <div className={styles.tableWrap}>
-            <table className={styles.dataTable}>
+            <table className={`${styles.dataTable} ${stickyActions ? styles.stickyActions : ''}`}>
                 <thead>
                     <tr>{columns.map((column) => <th key={column.key}>{column.label}</th>)}</tr>
                 </thead>

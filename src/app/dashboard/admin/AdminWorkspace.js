@@ -27,10 +27,11 @@ const navigation = [
 ];
 function DataTable({ columns, rows, emptyMessage, className = '', columnWidths }) {
     if (!rows.length) return <p className={styles.emptyState}>{emptyMessage}</p>;
+    const stickyActions = ['action', 'actions', 'account_action'].includes(columns.at(-1)?.key);
 
     return (
         <div className={styles.tableWrap}>
-            <table className={`${styles.dataTable} ${className}`}>
+            <table className={`${styles.dataTable} ${className} ${stickyActions ? styles.stickyActions : ''}`}>
                 {columnWidths && <colgroup>{columnWidths.map((width, index) => <col key={columns[index].key} style={width ? { width } : undefined} />)}</colgroup>}
                 <thead><tr>{columns.map((column) => <th key={column.key}>{column.label}</th>)}</tr></thead>
                 <tbody>
