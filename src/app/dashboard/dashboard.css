@@ -964,3 +964,37 @@
 .workspace .searchForm button:not(:disabled):hover,
 .workspace .checkoutButton:not(:disabled):hover,
 .workspace .categories .activeCategory:hover { background-color: #001f9c; color: #fff; }
+
+/* Clear outlines on neutral cashier controls, including dialog Cancel buttons. */
+.workspace :is(
+    .iconButton,
+    .utilityButton:not(.refreshCatalogButton),
+    .categories button:not(.activeCategory),
+    .quantity button,
+    .paymentMethodButton,
+    .selectTransaction,
+    .refundItemOption,
+    .smallAction,
+    .refundSaleButton,
+    .historyActions button,
+    .quickCashButtons button,
+    .dialogHeader > button
+) {
+    border: 1px solid #8fa4c5;
+}
+.workspace :is(
+    .iconButton,
+    .utilityButton:not(.refreshCatalogButton),
+    .categories button:not(.activeCategory),
+    .quantity button,
+    .paymentMethodButton,
+    .selectTransaction,
+    .refundItemOption,
+    .smallAction,
+    .refundSaleButton,
+    .historyActions button,
+    .quickCashButtons button,
+    .dialogHeader > button
+):not(:disabled):hover {
+    border-color: #4267a4;
+}
