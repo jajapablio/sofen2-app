@@ -6,6 +6,7 @@ import Papa from 'papaparse';
 import { useRouter } from 'next/navigation';
 import InteractiveParticles from '../../../components/InteractiveParticles';
 import { getSupabaseClient } from '../../../lib/supabase/client';
+import ForecastEngine from '../../../components/ForecastEngine';
 import EmployeeForm from '../manager/EmployeeForm';
 import styles from './admin.module.css';
 
@@ -76,7 +77,6 @@ export default function AdminWorkspace() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [salesForecasts, setSalesForecasts] = useState([]);
     const [stockAlerts, setStockAlerts] = useState([]);
-    const [forecastGenerated, setForecastGenerated] = useState(false);
     const [generatingForecast, setGeneratingForecast] = useState(false);
 
     useEffect(() => {
@@ -168,7 +168,6 @@ export default function AdminWorkspace() {
                 setAuditLogs(results[9].data || []);
                 setSalesForecasts(results[10].data || []);
                 setStockAlerts(results[11].data || []);
-                setForecastGenerated(true);
             } catch (loadError) {
                 if (isCurrent) setError(loadError.message || 'Unable to load store data.');
             } finally {
@@ -272,7 +271,6 @@ export default function AdminWorkspace() {
 
             if (rpcError) throw rpcError;
 
-            setForecastGenerated(true);
             setRefreshKey((current) => current + 1);
         } catch (rpcError) {
             setError(rpcError.message || 'Unable to generate forecasts.');
@@ -595,37 +593,7 @@ export default function AdminWorkspace() {
                                             {salesDays.map((day) => <div key={day.key} className={styles.trendColumn}><span>{day.amount ? money(day.amount) : ' '}</span><div className={styles.trendTrack}><i style={{ height: `${day.amount ? Math.max(4, day.amount / maxSalesDay * 100) : 0}%` }} /></div><small>{day.label}</small></div>)}
                                         </div>
                                     </section>
-                                    {!forecastGenerated && (
-                                        <section className={styles.panel}>
-                                            <div className={styles.panelHeading}><div><h2>Forecast engine</h2><p>Generate sales and inventory forecasts</p></div></div>
-                                            <div style={{ padding: '20px', textAlign: 'center' }}>
-                                                <p>No forecasts generated yet. Analyze sales history to predict demand.</p>
-                                                <button className={styles.primaryButton} type="button" onClick={generateForecasts} disabled={generatingForecast}>
-                                                    {generatingForecast ? 'Generating…' : 'Generate Forecasts'}
-                                                </button>
-                                            </div>
-                                        </section>
-                                    )}
-                                    {salesForecasts.length > 0 && (
-                                        <section className={styles.panel}>
-                                            <div className={styles.panelHeading}><div><h2>Forecast engine</h2><p>Sales predictions · next 7 days</p></div></div>
-                                            <div className={styles.metricGrid}>
-                                                <section className={styles.metricCard}><span>Predicted tomorrow</span><strong>{money(salesForecasts[0]?.predicted_sales || 0)}</strong><small>{salesForecasts[0]?.confidence_score}% confidence</small></section>
-                                                <section className={styles.metricCard}><span>Next 7 days</span><strong>{money(salesForecasts.slice(0, 7).reduce((s, f) => s + Number(f.predicted_sales), 0))}</strong><small>Projected revenue</small></section>
-                                                <section className={styles.metricCard}><span>Next 30 days</span><strong>{money(salesForecasts.slice(0, 30).reduce((s, f) => s + Number(f.predicted_sales), 0))}</strong><small>Monthly forecast</small></section>
-                                            </div>
-                                            {stockAlerts.length > 0 && (
-                                                <div style={{ marginTop: '12px' }}>
-                                                    <strong style={{ color: '#c0392b' }}>⚠️ {stockAlerts.length} stock shortage alert(s)</strong>
-                                                    <ul style={{ marginTop: '6px', fontSize: '12px', textAlign: 'left' }}>
-                                                        {stockAlerts.slice(0, 5).map((alert) => (
-                                                            <li key={alert.product_id}>{alert.product_name}: restock {alert.suggested_restock} units ({alert.days_until_shortage === 0 ? 'NOW' : alert.days_until_shortage + ' days'})</li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </section>
-                                    )}
+                                    <ForecastEngine forecasts={salesForecasts} alerts={stockAlerts} onRefresh={generateForecasts} busy={generatingForecast} />
                                     <section className={styles.panel}>
                                         <div className={styles.panelHeading}><div><h2>Store terminals</h2><p>Devices seen in the last five minutes</p></div><strong className={styles.networkCount}>{onlineDevices}/{devices.length}</strong></div>
                                         <div className={styles.deviceSummary}><span>{pendingSync} pending sync records</span><span>{devices.length - onlineDevices} offline or unreported</span></div>

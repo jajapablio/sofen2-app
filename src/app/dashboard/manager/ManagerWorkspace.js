@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InteractiveParticles from '../../../components/InteractiveParticles';
 import { getSupabaseClient } from '../../../lib/supabase/client';
+import ForecastEngine from '../../../components/ForecastEngine';
 import EmployeeForm from './EmployeeForm';
 import styles from './manager.module.css';
 
@@ -434,34 +435,10 @@ export default function ManagerWorkspace({ requiredRole }) {
                     <>
                         {activeTab === 'overview' && (
                             <div className={styles.grid}>
-                                {salesForecasts.length > 0 && (
-                                    <>
-                                        <section className={`${styles.card} ${styles.kpiCard}`}>
-                                            <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Tomorrow</span><i className="fas fa-calendar-day" /></div>
-                                            <div className={styles.kpiValue}>{money(dailyForecasts[0]?.predicted_sales || 0)}</div>
-                                            <div className={styles.kpiSubtitle}>Confidence: {dailyForecasts[0]?.confidence_score}%</div>
-                                        </section>
-                                        <section className={`${styles.card} ${styles.kpiCard}`}>
-                                            <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Next 7 Days</span><i className="fas fa-calendar-week" /></div>
-                                            <div className={styles.kpiValue}>{money(dailyForecasts.slice(0, 7).reduce((sum, f) => sum + Number(f.predicted_sales), 0))}</div>
-                                            <div className={styles.kpiSubtitle}>Up to 90 days of recorded sales</div>
-                                        </section>
-                                        <section className={`${styles.card} ${styles.kpiCard}`}>
-                                            <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Next 14 Days</span><i className="fas fa-calendar" /></div>
-                                            <div className={styles.kpiValue}>{money(dailyForecasts.slice(0, 14).reduce((sum, f) => sum + Number(f.predicted_sales), 0))}</div>
-                                            <div className={styles.kpiSubtitle}>Two-week revenue forecast</div>
-                                        </section>
-                                        <section className={`${styles.card} ${styles.kpiCard}`}>
-                                            <div className={styles.cardHeader}><span className={styles.cardTitle}>Forecast Confidence</span><i className="fas fa-percentage" /></div>
-                                            <div className={styles.kpiValue}>{dailyForecasts[0]?.confidence_score || 0}%</div>
-                                            <div className={styles.kpiSubtitle}>Based on {sales.length} recent sales</div>
-                                        </section>
-                                    </>
-                                )}
                                 <section className={`${styles.card} ${styles.chartCard}`} aria-label="Sales chart">
                                     <div className={`${styles.cardHeader} ${styles.salesChartHeader}`}>
                                         <div>
-                                            <h2 className={styles.cardTitle}>{salesChartMode === 'actual' ? 'Actual Sales' : 'Sales Forecast · Tomorrow'}</h2>
+                                            <h2 className={styles.cardTitle}>{salesChartMode === 'actual' ? 'Revenue trend' : 'Sales Forecast · Tomorrow'}</h2>
                                             <p className={styles.cardSubtitle}>{salesChartMode === 'actual' ? 'Daily completed sales · Today centered · Philippine time' : 'Prediction for the next calendar day · Philippine time'}</p>
                                         </div>
                                         <div className={styles.chartSwitch} role="group" aria-label="Sales chart view">
@@ -489,32 +466,7 @@ export default function ManagerWorkspace({ requiredRole }) {
                                     {salesChartMode === 'forecast' && <p className={styles.cardSubtitle}>{tomorrowForecast ? `Tomorrow’s confidence: ${tomorrowForecast.confidence_score}%. Estimates refresh hourly; limited history may produce a daily-average prediction.` : 'Tomorrow’s prediction is not available yet. Update the forecast after completed sales are recorded.'}</p>}
                                 </section>
 
-                                <section className={`${styles.card} ${styles.alertsCard}`}>
-                                    <div className={styles.stackedHeader}>
-                                        <h2 className={styles.cardTitle}>Stock Shortage Alerts</h2>
-                                        <div className={styles.cardSubtitle}>Products that may run out based on predicted demand</div>
-                                    </div>
-                                    {stockAlerts.length > 0 ? (
-                                        <div className={styles.dataList}>
-                                            {stockAlerts.map((alert) => (
-                                                <div className={styles.dataRow} key={alert.product_id}>
-                                                    <div>
-                                                        <strong>{alert.product_name}</strong>
-                                                        <span style={{ fontSize: '12px', color: '#666' }}>{alert.sku} · {alert.store_name}</span>
-                                                    </div>
-                                                    <div style={{ textAlign: 'right' }}>
-                                                        <div style={{ color: alert.days_until_shortage <= 3 ? '#c0392b' : '#e67e22', fontWeight: 'bold' }}>
-                                                            {alert.days_until_shortage === 0 ? 'OUT OF STOCK' : `Shortage in ${alert.days_until_shortage} ${alert.days_until_shortage === 1 ? 'day' : 'days'}`}
-                                                        </div>
-                                                        <div style={{ fontSize: '12px' }}>Restock: {alert.suggested_restock} units</div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className={styles.emptyState}>{forecasts.length ? 'No predicted shortages in the next 7 days.' : 'Shortage predictions will appear once sales history is available.'}</p>
-                                    )}
-                                </section>
+                                <div className={styles.forecastPanel}><ForecastEngine forecasts={salesForecasts} alerts={stockAlerts} onRefresh={generateForecasts} busy={generatingForecast} disabled={!profile?.store_id} /></div>
 
                                 <section className={`${styles.card} ${styles.wideCard}`}>
                                     <div className={styles.cardHeader}>

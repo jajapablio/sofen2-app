@@ -898,3 +898,8 @@
 .todayColumn .barLabel { color: #00695c; font-weight: 700; }
 .centeredSalesChart .barLabel { font-size: clamp(8px, 1.6vw, 11px); }
 .chartFooter { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 10px; }
+
+.forecastPanel { grid-column: span 2; min-width: 0; display: grid; }
+.salesChartHeader h2 { color: #263442; font-size: 18px; font-weight: 700; }
+@media (min-width: 701px) and (max-width: 1100px) { .forecastPanel { grid-column: span 1; } }
+@media (max-width: 700px) { .forecastPanel { grid-column: 1 / -1; } }
