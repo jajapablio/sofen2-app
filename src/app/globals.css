@@ -242,9 +242,14 @@ body {
 .form-options input[type="checkbox"] { margin-right: 8px; }
 
 .forgot-pass {
+    padding: 0;
+    border: 0;
     color: #0044ff;
+    background: transparent;
     text-decoration: none;
     font-weight: 600;
+    font: inherit;
+    cursor: pointer;
     transition: 0.2s;
 }
 
@@ -292,77 +297,15 @@ body {
 
 .btn-text-link:hover { text-decoration: underline; color: #001f9c; }
 
-.pinSetupTitle {
-    margin: 0 0 8px;
-    color: #222;
-    font-size: 22px;
-}
-
-.pinSetupDescription {
-    margin: 0 0 20px;
-    color: #666;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.pinSkipButton {
-    display: block;
-    margin: 16px auto 0;
-}
-
-.pinDots {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    margin: 24px 0 12px;
-}
-
-.pinDot {
-    width: 14px;
-    height: 14px;
-    border: 2px solid #9aa3b5;
-    border-radius: 50%;
-}
-
-.pinDot.filled {
-    border-color: #0044ff;
-    background: #0044ff;
-}
-
-.pinError {
+.authFeedback {
     margin: 0 0 12px;
-    color: #d93025;
     text-align: center;
     font-size: 13px;
 }
 
-.pinPad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    max-width: 300px;
-    margin: 0 auto 20px;
-}
-
-.pinPad button {
-    min-height: 52px;
-    border: 0;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    color: #222;
-    font: 600 18px 'Poppins', sans-serif;
-    cursor: pointer;
-}
-
-.pinPad button:hover {
-    background: #eef3ff;
-}
-
-.pinPad .pinPadAction {
-    font-size: 14px;
-    color: #0044ff;
-}
+.authFeedback.error { color: #d93025; }
+.authFeedback.success { color: #16836d; }
+.authFeedback.warning { color: #85621e; }
 
 .btn-primary:disabled {
     cursor: not-allowed;
@@ -377,12 +320,14 @@ body {
 
 @media (max-width: 768px) {
     body { overflow-y: auto; }
-    .container { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
-    .left-panel { padding: 120px 40px 60px 40px; text-align: center; align-items: center; min-height: 40vh; justify-content: center; }
-    .logo { top: 30px; left: 50%; transform: translateX(-50%); }
+    .container { grid-template-columns: 1fr; align-content: start; height: auto; min-height: 100vh; }
+    .left-panel { min-height: 96px; height: auto; padding: 94px 24px 12px; text-align: center; align-items: center; justify-content: flex-start; }
+    .welcome-text p,
+    .left-panel.signup-mode .welcome-text { display: none; }
+    .logo { top: 24px; left: 50%; transform: translateX(-50%); }
     .welcome-text h1 { font-size: clamp(38px, 9vw, 46px); letter-spacing: -1px; }
-    .form-container { margin: 40px 30px 60px; padding: 24px; }
-    .left-panel.signup-mode { min-height: 32vh; padding: 100px 30px 32px; }
+    .form-container { margin: 12px 20px 36px; padding: 24px; }
+    .left-panel.signup-mode { min-height: 96px; height: 96px; padding: 0; }
 }
 
 

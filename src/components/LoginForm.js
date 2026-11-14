@@ -2,118 +2,106 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getSupabaseClient } from '../lib/supabase/client';
 
-export default function LoginForm({ account, onSwitchToSignup }) {
+export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitchToSignup }) {
     const [showPassword, setShowPassword] = useState(false);
-    const [role, setRole] = useState('');
-    const [pinStep, setPinStep] = useState(false);
-    const [enteredPin, setEnteredPin] = useState('');
-    const [pinError, setPinError] = useState('');
+    const [identifier, setIdentifier] = useState('');
+    const [feedback, setFeedback] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!account) {
-            alert("Please sign up before logging in.");
-            return;
-        }
-
         const formData = new FormData(e.currentTarget);
-        const username = formData.get('username').trim().toLowerCase();
+        const loginIdentifier = formData.get('identifier').trim();
         const password = formData.get('password');
 
-        if (username !== account.username || password !== account.password) {
-            alert("Invalid username or password.");
-            return;
-        }
+        setIsSubmitting(true);
+        setFeedback('');
 
-        if (account.pin) {
-            setEnteredPin('');
-            setPinError('');
-            setPinStep(true);
-        } else {
-            router.push('/dashboard');
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier: loginIdentifier, password }),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Unable to sign in.');
+
+            const supabase = getSupabaseClient();
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+                access_token: result.access_token,
+                refresh_token: result.refresh_token,
+            });
+            if (sessionError) throw sessionError;
+
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role, store_id, global_access, is_active')
+                .eq('id', sessionData.user.id)
+                .maybeSingle();
+
+            if (profileError) throw profileError;
+            if (!profile || !profile.is_active) {
+                await supabase.auth.signOut();
+                throw new Error('This account has no active staff profile. Contact your administrator.');
+            }
+
+            if (!profile.store_id && !(profile.role === 'admin' || (profile.role === 'manager' && profile.global_access))) {
+                await supabase.auth.signOut();
+                throw new Error('This account is not assigned to a store yet. Contact your administrator.');
+            }
+
+            router.push(profile.role === 'admin'
+                ? '/dashboard/admin'
+                : profile.role === 'manager'
+                    ? '/dashboard/manager'
+                    : '/dashboard');
+        } catch (error) {
+            setFeedback(error.message || 'Unable to sign in. Check your connection and try again.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const handlePinSubmit = (e) => {
-        e.preventDefault();
-        if (!account?.pin) {
-            setPinStep(false);
-            setPinError('');
-            alert("Your account is unavailable. Please log in again.");
+    const handlePasswordReset = async () => {
+        const emailAddress = identifier.trim().toLowerCase();
+        if (!emailAddress.includes('@')) {
+            setFeedback('Enter your email address to request a password reset.');
             return;
         }
 
-        if (enteredPin !== account.pin) {
-            setPinError("Incorrect PIN. Please try again.");
-            setEnteredPin('');
-            return;
+        try {
+            const supabase = getSupabaseClient();
+            const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
+                redirectTo: window.location.origin,
+            });
+            if (error) throw error;
+            setFeedback('If an account exists for that email, a password reset link has been sent.');
+        } catch (error) {
+            setFeedback(error.message || 'Unable to request a password reset.');
         }
-        router.push('/dashboard');
     };
-
-    const appendPinDigit = (digit) => {
-        setEnteredPin((current) => current.length < 6 ? current + digit : current);
-        setPinError('');
-    };
-
-    if (pinStep && account?.pin) {
-        return (
-            <div className="form-container active">
-                <form onSubmit={handlePinSubmit}>
-                    <h2 className="pinSetupTitle">Enter your PIN</h2>
-                    <p className="pinSetupDescription">Enter your 6-digit PIN to finish signing in.</p>
-                    <div className="pinDots" aria-label={`${enteredPin.length} of 6 digits entered`}>
-                        {Array.from({ length: 6 }, (_, index) => (
-                            <span key={index} className={`pinDot ${index < enteredPin.length ? 'filled' : ''}`} />
-                        ))}
-                    </div>
-                    {pinError && <p className="pinError" role="alert">{pinError}</p>}
-                    <div className="pinPad">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
-                            <button key={digit} type="button" onClick={() => appendPinDigit(String(digit))}>{digit}</button>
-                        ))}
-                        <button type="button" className="pinPadAction" onClick={() => setEnteredPin('')}>Clear</button>
-                        <button type="button" onClick={() => appendPinDigit('0')}>0</button>
-                        <button type="button" className="pinPadAction" onClick={() => setEnteredPin((current) => current.slice(0, -1))}>⌫</button>
-                    </div>
-                    <button type="submit" className="btn-primary" disabled={enteredPin.length !== 6}>Verify PIN</button>
-                    <button type="button" className="btn-text-link pinSkipButton" onClick={() => setPinStep(false)}>Back to login</button>
-                </form>
-            </div>
-        );
-    }
 
     return (
         <div className="form-container active">
             <form onSubmit={handleSubmit}>
                 <div className="input-group">
-                    <label className="input-label">Select Role</label>
-                    <i className="fas fa-briefcase input-icon-left"></i>
-                    <select name="role" required value={role} onChange={(e) => setRole(e.target.value)}>
-                        <option value="" disabled hidden>Choose a role</option>
-                        <option value="cashier">Cashier</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                    <i className="fas fa-chevron-down input-icon-right"></i>
-                </div>
-
-                <div className="input-group">
-                    <label className="input-label">Username</label>
+                    <label className="input-label" htmlFor="login-identifier">Username or Email</label>
                     <i className="fas fa-user input-icon-left"></i>
-                    <input type="text" name="username" placeholder="Enter your username" autoComplete="username" required />
+                    <input id="login-identifier" type="text" name="identifier" placeholder="Username or email" autoComplete="username" value={identifier} onChange={(event) => setIdentifier(event.target.value)} required />
                 </div>
 
                 <div className="input-group">
-                    <label className="input-label">Password</label>
+                    <label className="input-label" htmlFor="login-password">Password</label>
                     <i className="fas fa-lock input-icon-left"></i>
                     <input 
+                        id="login-password"
                         type={showPassword ? "text" : "password"} 
                         name="password" 
                         placeholder="••••••••" 
+                        autoComplete="current-password"
                         required 
                     />
                     <i 
@@ -123,19 +111,28 @@ export default function LoginForm({ account, onSwitchToSignup }) {
                 </div>
 
                 <div className="form-options">
-                    <label>
-                        <input type="checkbox" /> Remember me
-                    </label>
-                    <a href="#" className="forgot-pass">Forgot Password?</a>
+                    <span>Use your username or email.</span>
+                    <button type="button" className="forgot-pass" onClick={handlePasswordReset}>Forgot Password?</button>
                 </div>
 
-                <button type="submit" className="btn-primary">Login
+                {notice && <p className="authFeedback success" role="status">{notice}</p>}
+                {feedback && <p className="authFeedback error" role="alert">{feedback}</p>}
+                {signupStatus === 'unavailable' && signupEnabled && <p className="authFeedback warning" role="status">Signup availability could not be checked. The server will verify when you submit.</p>}
+
+                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Signing in…' : 'Login'}
                 </button>
             </form>
 
             <div className="bottom-section">
-                <span>Don’t have an account yet?</span>
-                <button type="button" className="btn-text-link" onClick={onSwitchToSignup}>Sign up</button>
+                {signupEnabled ? (
+                    <>
+                        <span>Setting up a new store?</span>
+                        <button type="button" className="btn-text-link" onClick={onSwitchToSignup}>Sign up</button>
+                    </>
+                ) : (
+                    <span>New store signups are currently disabled.</span>
+                )}
             </div>
         </div>
     );

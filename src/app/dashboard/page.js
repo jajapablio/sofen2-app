@@ -1,4 +1,4 @@
-import CashierWorkspace from './CashierWorkspace';
+import CashierWorkspace from './CashierConnectedWorkspace';
 
 export default function CashierDashboard() {
     return <CashierWorkspace />;

@@ -1,16 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import LoginForm from './LoginForm';
-import PinSetup from './PinSetup';
 import SignupForm from './SignupForm';
 import InteractiveParticles from './InteractiveParticles';
 
 export default function AuthContainer() {
     const [screen, setScreen] = useState('login');
-    const [account, setAccount] = useState(null);
+    const [notice, setNotice] = useState('');
+    const [signupStatus, setSignupStatus] = useState('checking');
+    const signupEnabled = signupStatus !== 'closed';
     const isLogin = screen === 'login';
+
+    useEffect(() => {
+        fetch('/api/auth/register-owner')
+            .then(async (response) => {
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Could not check signup availability.');
+                setSignupStatus(result.enabled ? 'enabled' : 'closed');
+            })
+            .catch(() => setSignupStatus('unavailable'));
+    }, []);
 
     return (
         <div className="container">
@@ -33,22 +44,25 @@ export default function AuthContainer() {
             </div>
 
             {screen === 'login' ? (
-                <LoginForm account={account} onSwitchToSignup={() => setScreen('signup')} />
-            ) : screen === 'signup' ? (
-                <SignupForm
-                    onSignup={(newAccount) => {
-                        setAccount(newAccount);
-                        setScreen('pinSetup');
-                    }}
-                    onSwitchToLogin={() => setScreen('login')}
+                <LoginForm
+                    notice={notice}
+                    signupEnabled={signupEnabled}
+                    signupStatus={signupStatus}
+                    onSwitchToSignup={signupEnabled ? () => {
+                        setNotice('');
+                        setScreen('signup');
+                    } : undefined}
                 />
             ) : (
-                <PinSetup
-                    onComplete={(pin) => {
-                        setAccount((currentAccount) => ({ ...currentAccount, pin }));
+                <SignupForm
+                    onSignup={(message) => {
+                        setNotice(message);
                         setScreen('login');
                     }}
-                    onSkip={() => setScreen('login')}
+                    onSwitchToLogin={() => {
+                        setNotice('');
+                        setScreen('login');
+                    }}
                 />
             )}
         </div>

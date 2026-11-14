@@ -1,0 +1,81 @@
+.page {
+    min-height: 100vh;
+    padding: 22px 18px 48px;
+    color: #1c2740;
+    background: #f5f7fb;
+    font-family: 'Poppins', sans-serif;
+}
+
+.header {
+    display: flex;
+    max-width: 700px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto 30px;
+}
+
+.header a,
+.header span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #53617c;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.header span { color: #14874a; }
+
+.panel {
+    width: min(100%, 520px);
+    margin: 0 auto;
+    padding: 28px;
+    border: 1px solid #e6eaf1;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 35px #172b500d;
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    color: #758099;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.panel h1 { margin: 0; color: #1c2740; font-size: 21px; }
+.disclosure { margin: 9px 0 20px; color: #14874a; font-size: 9px; font-weight: 700; }
+.amount { display: flex; justify-content: space-between; align-items: center; padding: 14px; border-radius: 8px; background: #f5f7fc; color: #69758e; font-size: 11px; }
+.amount strong { color: #102d86; font-size: 20px; }
+.details { display: grid; gap: 10px; margin: 18px 0; }
+.details div { display: flex; justify-content: space-between; gap: 14px; font-size: 10px; }
+.details dt { color: #758099; }
+.details dd { margin: 0; color: #1c2740; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+.countdown { display: flex; align-items: center; justify-content: center; gap: 7px; color: #69758e; font-size: 11px; }
+.countdown strong { color: #102d86; font-variant-numeric: tabular-nums; }
+.primaryButton,
+.secondaryButton,
+.cancelButton { min-height: 40px; border: 0; border-radius: 7px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; }
+.primaryButton { display: block; width: 100%; margin-top: 16px; color: #fff; background: #2458e6; }
+.primaryButton:disabled { opacity: .55; cursor: wait; }
+.cancelButton { display: block; margin: 10px auto 0; padding: 0 12px; color: #9c3e32; background: transparent; }
+.secondaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border: 1px solid #e6eaf1; color: #53617c; background: #fff; }
+.receipt { margin-top: 22px; padding-top: 17px; border-top: 1px dashed #cbd2df; }
+.receipt h2 { display: flex; align-items: center; gap: 7px; margin: 0; color: #14874a; font-size: 14px; }
+.warning { margin: 11px 0; color: #9c3e32; font-size: 9px; font-weight: 700; }
+.message { color: #69758e; font-size: 11px; text-align: center; }
+.error { display: flex; align-items: center; gap: 7px; color: #9c3e32; font-size: 10px; }
+
+@media (max-width: 480px) {
+    .page { padding: 16px 12px 32px; }
+    .panel { padding: 21px 17px; }
+}
+
+@media print {
+    .page { min-height: 0; padding: 0; background: #fff; }
+    .header, .eyebrow, .disclosure, .countdown, .primaryButton, .cancelButton, .secondaryButton { display: none !important; }
+    .panel { width: 100%; padding: 0; border: 0; box-shadow: none; }
+    .receipt { display: block; }
+}

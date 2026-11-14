@@ -481,7 +481,7 @@
     gap: 9px;
 }
 
-.workspace .connection, .workspace .demoBadge {
+.workspace .connection {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -495,7 +495,9 @@
 .workspace .connection { background: #e9f8ef; color: #14874a; }
 .workspace .connection span { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .workspace .connection.offline { background: #fff0ef; color: #c13e35; }
-.workspace .demoBadge { background: #fff5dd; color: #90641a; }
+
+.workspace .errorNote { border-color: #f2c5bd; background: #fff1ee; color: #9c3e32; }
+.workspace .noticeNote { border-color: #b7e5d7; background: #eaf8f2; color: #176f53; }
 
 .workspace .iconButton, .workspace .utilityButton, .workspace .textButton, .workspace .smallAction, .workspace .removeAction,
 .workspace .pointsButton, .workspace .operations button, .workspace .shiftStatus button, .workspace .backButton,
@@ -611,12 +613,26 @@
 }
 
 .workspace .productCard:hover { transform: translateY(-2px); border-color: #a7bcff; box-shadow: 0 7px 20px #1b3b7b10; }
-.workspace .productIcon { margin-bottom: 4px; font-size: 33px; }
+.workspace .productCard:disabled { opacity: .52; cursor: not-allowed; }
+.workspace .productIcon { width: 100%; display: flex; justify-content: center; margin-bottom: 4px; font-size: 33px; }
+.workspace .productPhoto { width: min(110px, 100%); max-width: 100%; height: auto; aspect-ratio: 110 / 74; border-radius: 5px; object-fit: cover; }
 .workspace .productName { color: var(--ink); font-size: 12px; font-weight: 700; text-align: center; }
 .workspace .productSku { color: #9aa3b5; font-size: 9px; }
 .workspace .productPrice { margin-top: 3px; color: var(--blue); font-size: 12px; font-weight: 700; }
 .workspace .noProducts { grid-column: 1 / -1; padding: 45px 15px; color: var(--muted); font-size: 12px; text-align: center; }
 .workspace .catalogFooter { display: flex; justify-content: space-between; padding-top: 12px; color: #939cb0; font-size: 10px; }
+
+.workspace .recentSales { flex: 0 0 auto; max-height: 190px; overflow-y: auto; margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.workspace .recentSales h2 { margin-bottom: 5px; color: var(--ink); font-size: 12px; }
+.workspace .recentSaleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); color: #69758e; font-size: 10px; }
+.workspace .recentSaleRow div { display: grid; gap: 3px; }
+.workspace .recentSaleRow div strong, .workspace .recentSaleRow > strong { color: var(--ink); }
+.workspace .recentSaleRow div span, .workspace .emptyRecentSales { color: var(--muted); font-size: 9px; }
+.workspace .emptyRecentSales { padding: 10px 0 3px; }
+.workspace .voidSaleButton { padding: 5px 8px; border: 1px solid #f0d7d4; border-radius: 6px; background: #fff7f6; color: #b74842; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; }
+.workspace .voidSaleButton:hover { border-color: #d78a84; background: #fff0ef; }
+.workspace .refundSaleButton { padding: 5px 8px; border: 1px solid #d8e3ff; border-radius: 6px; background: #f5f8ff; color: var(--blue); font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; }
+.workspace .refundSaleButton:hover { border-color: #9cb4f5; background: #edf2ff; }
 
 .workspace .order {
     min-height: 100vh;
@@ -644,6 +660,7 @@
 .workspace .cartItemActions { gap: 8px; margin-top: 8px; }
 .workspace .quantity { gap: 11px; padding: 3px; border: 1px solid var(--line); border-radius: 6px; }
 .workspace .quantity button { width: 23px; height: 23px; border: 0; border-radius: 4px; background: #f3f6fb; color: var(--navy); font-size: 16px; cursor: pointer; }
+.workspace .quantity button:disabled { opacity: .45; cursor: not-allowed; }
 .workspace .quantity span { min-width: 12px; color: #48546c; font-size: 11px; text-align: center; }
 .workspace .smallAction { padding: 6px 8px; border-radius: 5px; background: #eef3ff; color: var(--blue); font-size: 9px; font-weight: 700; }
 .workspace .removeAction { margin-left: auto; background: transparent; color: #b0b7c5; }
@@ -677,6 +694,9 @@
 .workspace .totals .discountRow button { border: 0; background: transparent; color: var(--blue); font: inherit; font-size: 10px; cursor: pointer; }
 .workspace .totals .grandTotal { margin-top: 2px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--ink); font-size: 13px; font-weight: 700; }
 .workspace .totals .grandTotal strong { color: var(--navy); font-size: 17px; }
+.workspace .totals .discountTotal, .workspace .totals .discountTotal strong { color: #16835d; }
+.workspace .discountField { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 18px; padding: 10px 0; color: #53617c; font-size: 11px; font-weight: 600; }
+.workspace .discountField input { width: 96px; height: 36px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font: inherit; text-align: right; }
 .workspace .checkoutActions { gap: 8px; padding: 12px 18px 8px; }
 .workspace .checkoutButton, .workspace .voidButton { min-height: 42px; border: 0; border-radius: 8px; font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
 .workspace .checkoutButton { flex: 1; background: linear-gradient(105deg, #1747bb, #3975f6); color: #fff; box-shadow: 0 5px 14px #2458e628; }
@@ -705,7 +725,6 @@
 .workspace .historyCard > strong { font-size: 11px; }
 .workspace .historyActions { gap: 5px; }
 .workspace .historyActions button { padding: 6px 8px; border-radius: 5px; background: #eef3ff; color: var(--blue); font-size: 9px; font-weight: 700; }
-.workspace .demoFootnote { margin: 12px 0 0; color: #8b94a7; font-size: 10px; line-height: 1.5; }
 .workspace .selectTransaction { width: 100%; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #edf0f5; background: #fff; color: var(--ink); text-align: left; }
 .workspace .selectTransaction span { display: grid; gap: 4px; }
 .workspace .selectTransaction strong { font-size: 11px; }
@@ -732,6 +751,45 @@
 .workspace .primaryButton:disabled { background: #c4cada; cursor: not-allowed; }
 .workspace .paymentTotal { justify-content: space-between; margin-bottom: 13px; padding: 12px; border-radius: 8px; background: #f5f7fc; color: #69758e; font-size: 11px; }
 .workspace .paymentTotal strong { color: var(--navy); font-size: 18px; }
+.workspace .paymentField { display: grid; gap: 6px; margin-bottom: 14px; color: #6f7a91; font-size: 10px; font-weight: 600; }
+.workspace .paymentField select { height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: #fff; font: inherit; }
+.workspace .paymentField select:disabled { color: #7c879b; background: #f5f7fb; }
+.workspace .paymentDisclosure { display: flex; align-items: center; gap: 6px; }
+.workspace .qrPaymentPanel { display: grid; justify-items: center; gap: 9px; margin: 10px 0; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; text-align: center; }
+.workspace .qrPaymentPanel svg { max-width: 100%; height: auto; padding: 7px; border: 1px solid var(--line); border-radius: 5px; background: #fff; }
+.workspace .qrPaymentPanel > p { display: flex; align-items: center; gap: 6px; margin: 0; color: #69758e; font-size: 9px; }
+.workspace .qrPaymentPanel > div { display: flex; width: 100%; justify-content: space-between; gap: 10px; color: #758099; font-size: 9px; }
+.workspace .qrPaymentPanel > div strong { color: var(--ink); }
+.workspace .qrPaymentPanel .qrCountdown { justify-content: center; color: #53617c; }
+.workspace .qrPaymentPanel .qrCountdown strong { color: var(--navy); font-variant-numeric: tabular-nums; }
+.workspace .demoCardFields { display: grid; gap: 10px; margin: 8px 0 14px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; }
+.workspace .demoCardFields > p { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--navy); font-size: 10px; font-weight: 700; }
+.workspace .demoCardFields label { display: grid; gap: 5px; color: #6f7a91; font-size: 9px; font-weight: 600; }
+.workspace .demoCardFields input, .workspace .demoCardFields select { width: 100%; min-width: 0; height: 36px; padding: 0 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); font: inherit; font-size: 10px; }
+.workspace .demoCardFields input[readonly] { color: #6f7a91; background: #f4f6fa; }
+.workspace .demoCardFields small { color: #8a94a8; font-size: 8px; line-height: 1.45; }
+.workspace .paymentReceiptSummary h3 { display: flex; align-items: center; gap: 7px; margin: 4px 0 8px; color: #16835d; font-size: 14px; }
+.workspace .paymentReceiptSummary .receiptDisclosure { margin: 0 0 13px; color: #a64139; font-size: 9px; font-weight: 700; }
+.workspace .paymentReceiptDetails { display: grid; gap: 9px; margin-bottom: 16px; }
+.workspace .paymentReceiptDetails span { display: flex; justify-content: space-between; gap: 12px; color: #758099; font-size: 9px; }
+.workspace .paymentReceiptDetails strong { color: var(--ink); text-align: right; overflow-wrap: anywhere; }
+.workspace .externalPaymentCheck { display: flex; align-items: flex-start; gap: 9px; margin: 14px 0; color: #58647b; font-size: 11px; line-height: 1.5; }
+.workspace .externalPaymentCheck input { flex: 0 0 auto; margin-top: 2px; accent-color: var(--blue); }
+.workspace .paymentError { margin: 10px 0; color: #9c3e32; font-size: 11px; }
+.workspace .paymentDisclosure { margin: 0 18px 14px; color: #778199; font-size: 9px; line-height: 1.45; }
+.workspace .dialogBody .paymentDisclosure { margin: 10px 0; }
+.workspace .cashAmountField strong { color: var(--ink); font-size: 11px; }
+.workspace .voidInstructions { margin: 0 0 15px; color: #66718b; font-size: 11px; line-height: 1.5; }
+.workspace .voidReason { display: grid; gap: 7px; margin: 12px 0; color: #6f7a91; font-size: 10px; font-weight: 600; }
+.workspace .voidReason textarea { min-height: 82px; resize: vertical; padding: 9px 10px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font: inherit; font-size: 11px; }
+.workspace .refundItemList { display: grid; gap: 5px; max-height: 240px; overflow-y: auto; margin: 0 0 14px; }
+.workspace .refundItemOption { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.workspace .refundItemOption > span { display: grid; gap: 4px; min-width: 0; }
+.workspace .refundItemOption strong { font-size: 11px; }
+.workspace .refundItemOption small { color: var(--muted); font-size: 9px; }
+.workspace .refundItemOption.selectedRefundItem { border-color: #7d9df1; background: #f5f8ff; }
+.workspace .refundItemOption:disabled { opacity: .5; cursor: not-allowed; }
+.workspace .refundForm { border-top: 1px solid var(--line); padding-top: 13px; }
 .workspace .paymentMethodButtons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .workspace .paymentMethodButton { min-height: 132px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font: inherit; transition: transform 150ms ease, box-shadow 150ms ease; }
 .workspace .paymentMethodButton:hover { transform: translateY(-2px); box-shadow: 0 6px 16px #172b5012; }
@@ -769,8 +827,9 @@
 }
 
 @media (max-width: 760px) {
-    .workspace { display: flex; flex-direction: column; }
-    .workspace .products { min-height: 56vh; padding: 16px; }
+    body:has(.workspace) { height: auto; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; overflow-y: auto; }
+    .workspace { display: flex; flex-direction: column; height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
+    .workspace .products { min-height: 0; padding: 16px; }
     .workspace .header { flex-direction: column; }
     .workspace .headerActions { max-width: none; justify-content: flex-start; }
     .workspace .header h1 { font-size: 20px; }
@@ -778,11 +837,19 @@
     .workspace .toolRow { align-items: stretch; flex-direction: column; }
     .workspace .searchForm { min-height: 44px; }
     .workspace .toolRow > .utilityButton { align-self: flex-start; }
-    .workspace .productGrid { grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); }
-    .workspace .productCard { min-height: 135px; }
+    .workspace .categories button { flex: 0 0 auto; }
+    .workspace .productGrid { flex: 0 0 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; overflow: visible; padding-right: 0; }
+    .workspace .productCard { min-width: 0; min-height: 145px; padding: 12px 8px; }
+    .workspace .productSku { max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+    .workspace .productName, .workspace .productPrice { font-size: 13px; }
     .workspace .catalogFooter { gap: 10px; flex-wrap: wrap; }
-    .workspace .order { min-height: 75vh; border-top: 1px solid var(--line); border-left: 0; }
+    .workspace .order { min-height: 0; border-top: 1px solid var(--line); border-left: 0; }
     .workspace .cartList { max-height: 34vh; }
+    .workspace .recentSaleRow { flex-wrap: wrap; }
+    .workspace .recentSaleRow div { flex: 1 1 55%; }
+    .workspace .recentSaleRow > span { flex: 1; }
+    .workspace .recentSaleRow > strong { text-align: right; }
+    .workspace .discountField { margin: 0 18px; }
 }
 
 @media print {
