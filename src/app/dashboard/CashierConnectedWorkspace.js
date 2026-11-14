@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, CreditCard, Printer, QrCode, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, CreditCard, Printer, QrCode } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import './dashboard.css';
@@ -671,7 +671,6 @@ export default function CashierConnectedWorkspace() {
                         <i className="fas fa-credit-card" aria-hidden="true" /> Record payment
                     </button>
                 </div>
-                <p className="paymentDisclosure"><ShieldCheck size={13} /> Test mode</p>
             </aside>
 
             {isPaymentOpen && (
