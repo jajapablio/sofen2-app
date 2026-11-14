@@ -1003,3 +1003,8 @@
 
 @keyframes store-status-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
 @media (prefers-reduced-motion: reduce) { .workspace .connection.online span { animation: none; } }
+
+.workspace .cashierHeadingLine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.workspace .cashierHeadingLine .eyebrow { margin: 0; }
+.workspace .cashierHeadingLine .connection { padding: 0; }
+.workspace .cashierInfo { background: transparent; background-image: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; }

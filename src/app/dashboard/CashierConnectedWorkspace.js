@@ -524,11 +524,10 @@ export default function CashierConnectedWorkspace() {
             <section className="products">
                 <header className="header">
                     <div>
-                        <p className="eyebrow">PREDICTPOS · CASHIER</p>
+                        <div className="cashierHeadingLine"><p className="eyebrow">PREDICTPOS · CASHIER</p>{store && <span className="connection online"><span aria-hidden="true" />{store.name}</span>}</div>
                         <h1>Point of sale</h1>
                     </div>
                     <div className="headerActions">
-                        {store && <span className="connection online"><span aria-hidden="true" />{store.name}</span>}
                         <span className="cashierInfo">{profile?.full_name || 'Cashier'}</span>
                         <button className="iconButton" type="button" onClick={logout}>
                             <i className="fas fa-sign-out-alt" aria-hidden="true" /> Log out
