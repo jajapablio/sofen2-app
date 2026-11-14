@@ -536,10 +536,6 @@ export default function CashierConnectedWorkspace() {
                     </div>
                 </header>
 
-                <div className="systemNote">
-                    <i className="fas fa-database" aria-hidden="true" />
-                    Catalog and sales are connected to your Supabase store. Tax rate: {(taxRate * 100).toFixed(2)}%.
-                </div>
                 {error && <div className="systemNote errorNote" role="alert">{error}</div>}
                 {notice && <div className="systemNote noticeNote" role="status">{notice}</div>}
 
