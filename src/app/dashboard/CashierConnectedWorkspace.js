@@ -753,7 +753,7 @@ export default function CashierConnectedWorkspace() {
                                     )}
                                     {paymentRecord?.status === 'expired' && <p className="paymentError" role="alert">This payment expired. Start a new payment to continue.</p>}
                                     {paymentError && paymentRecord?.status !== 'failed' && paymentRecord?.status !== 'expired' && <p className="paymentError" role="alert">{paymentError}</p>}
-                                    {paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && qrSeconds > 0 && <p className="qrCountdown" role="status">Waiting for QR scan. Payment will be confirmed automatically.</p>}
+                                    {paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && qrSeconds > 0 && <p className="qrCountdown" role="status">Waiting for payment. Scan the QR code, then tap Pay now on your phone.</p>}
                                     <div className="dialogActions">
                                         <button className="utilityButton" type="button" onClick={paymentRecord?.status === 'pending' ? cancelPayment : () => setIsPaymentOpen(false)} disabled={isSubmitting}>
                                             {paymentRecord?.status === 'pending' ? 'Cancel payment' : 'Close'}

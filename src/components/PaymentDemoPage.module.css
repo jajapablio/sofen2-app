@@ -79,3 +79,5 @@
     .panel { width: 100%; padding: 0; border: 0; box-shadow: none; }
     .receipt { display: block; }
 }
+.paymentActions { display: grid; gap: 10px; margin-top: 20px; }
+.paymentActions button { width: 100%; min-height: 44px; }

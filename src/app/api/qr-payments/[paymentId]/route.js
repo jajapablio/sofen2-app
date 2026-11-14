@@ -32,3 +32,17 @@ export async function POST(request, { params }) {
         return reply({ result });
     } catch { return reply({ error: 'Unable to confirm payment.' }, 500); }
 }
+
+export async function DELETE(request, { params }) {
+    try {
+        const context = await load(request, params);
+        if (context.response) return context.response;
+        const { data: payment, error } = await context.supabase.from('simulated_payments')
+            .update({ status: 'canceled', completed_at: new Date().toISOString(), failure_reason: 'Canceled from QR payment page.' })
+            .eq('id', context.payment.id).eq('payment_method', 'qrph').eq('status', 'pending')
+            .select(fields).maybeSingle();
+        if (error) throw error;
+        if (!payment) return reply({ error: 'Only a pending payment can be canceled. Check its latest status.' }, 409);
+        return reply({ payment });
+    } catch { return reply({ error: 'Unable to cancel payment.' }, 500); }
+}
