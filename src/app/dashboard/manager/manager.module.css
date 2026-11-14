@@ -894,3 +894,7 @@
 .chartSwitch button { padding: 9px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
 .chartSwitch button[aria-pressed="true"] { background: var(--primary); color: white; }
 .chartSwitch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+.tomorrowForecast { min-height: 245px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px 0; text-align: center; }
+.tomorrowAmount { color: var(--primary); font-size: clamp(32px, 5vw, 52px); line-height: 1.2; overflow-wrap: anywhere; max-width: 100%; }
+.forecastExplanation { max-width: 440px; margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }

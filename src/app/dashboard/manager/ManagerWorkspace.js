@@ -316,7 +316,11 @@ export default function ManagerWorkspace({ requiredRole }) {
         const key = day.toISOString().slice(0, 10);
         return { id: key, forecast_date: key, predicted_sales: actualTotals.get(key) || 0 };
     });
-    const chartDays = salesChartMode === 'actual' ? actualDailySales : dailyForecasts;
+    const tomorrow = new Date(todayInManila);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    const tomorrowKey = tomorrow.toISOString().slice(0, 10);
+    const tomorrowForecast = dailyForecasts.find((day) => day.forecast_date === tomorrowKey);
+    const chartDays = actualDailySales;
     const salesChartMax = Math.max(1, ...chartDays.map((row) => Number(row.predicted_sales)));
 
 
@@ -453,15 +457,24 @@ export default function ManagerWorkspace({ requiredRole }) {
                                 <section className={`${styles.card} ${styles.chartCard}`} aria-label="Sales chart">
                                     <div className={`${styles.cardHeader} ${styles.salesChartHeader}`}>
                                         <div>
-                                            <h2 className={styles.cardTitle}>{salesChartMode === 'actual' ? 'Actual Sales · Last 14 Days' : 'Sales Forecast · Next 14 Days'}</h2>
-                                            <p className={styles.cardSubtitle}>{salesChartMode === 'actual' ? 'Daily completed sales totals · Philippine time · Today included' : 'Upcoming daily sales estimates'}</p>
+                                            <h2 className={styles.cardTitle}>{salesChartMode === 'actual' ? 'Actual Sales · Last 14 Days' : 'Sales Forecast · Tomorrow'}</h2>
+                                            <p className={styles.cardSubtitle}>{salesChartMode === 'actual' ? 'Daily completed sales totals · Philippine time · Today included' : 'Prediction for the next calendar day · Philippine time'}</p>
                                         </div>
                                         <div className={styles.chartSwitch} role="group" aria-label="Sales chart view">
                                             <button type="button" aria-pressed={salesChartMode === 'actual'} onClick={() => setSalesChartMode('actual')}>Actual Sales</button>
                                             <button type="button" aria-pressed={salesChartMode === 'forecast'} onClick={() => setSalesChartMode('forecast')}>Predictive Forecast</button>
                                         </div>
                                     </div>
-                                    {chartDays.length ? (
+                                    {salesChartMode === 'forecast' ? (
+                                        tomorrowForecast ? (
+                                            <div className={styles.tomorrowForecast} aria-label="Tomorrow’s sales prediction">
+                                                <span className={styles.cardSubtitle}>{tomorrow.toLocaleDateString('en-PH', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                                                <strong className={styles.tomorrowAmount}>{money(tomorrowForecast.predicted_sales)}</strong>
+                                                <span className={styles.cardSubtitle}>Estimated sales · Confidence: {tomorrowForecast.confidence_score}%</span>
+                                                <p className={styles.forecastExplanation}>Based on recorded sales history. With limited history, the estimate uses the daily average until a trend can be established.</p>
+                                            </div>
+                                        ) : <p className={styles.emptyState}>Tomorrow’s prediction is not available yet. Use Update store forecast now to refresh it.</p>
+                                    ) : chartDays.length ? (
                                         <div className={styles.barChart} aria-label={salesChartMode === 'actual' ? 'Actual daily sales' : 'Predicted daily sales'}>
                                             {chartDays.map((day) => (
                                                 <div className={styles.barColumn} key={day.id} title={`${day.forecast_date}: ${money(day.predicted_sales)}`}>
