@@ -1,4 +1,4 @@
--- PROPOSED permission hardening: not yet applied to the live database.
+-- Applied to the pos database; retained here for repeatable setup.
 -- Store-scoped requests. Managers create pending orders; only store admins approve.
 ALTER TABLE public.purchase_orders ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "View Store Purchase Orders" ON public.purchase_orders;

@@ -82,4 +82,4 @@ The service worker caches only the offline page and public icons. Account pages,
 
 ### Purchase order approval
 
-Optional permission hardening (not yet applied; requires approval): run `supabase/purchase_order_approvals.sql` to replace permissive purchase-order policies with store-scoped reads/requests and admin-only approval. Managers create manual orders with `generated_by_ml=false`. Admin → Inventory lists the assigned store’s orders with Approve order actions and a pending navigation count. Both dashboards refresh order statuses every 15 seconds; approval does not receive stock or increase inventory.
+Purchase-order permission hardening is applied to the connected pos database. For other databases, run `supabase/purchase_order_approvals.sql` to replace permissive purchase-order policies with store-scoped reads/requests and admin-only approval. Managers create manual orders with `generated_by_ml=false`. Admin → Inventory lists the assigned store’s orders with Approve order actions and a pending navigation count. Both dashboards refresh order statuses every 15 seconds; approval does not receive stock or increase inventory.
