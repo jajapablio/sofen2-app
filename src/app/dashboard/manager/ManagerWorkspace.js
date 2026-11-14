@@ -23,11 +23,10 @@ const tabs = [
 
 function DataTable({ columns, rows, emptyMessage }) {
     if (!rows.length) return <p className={styles.emptyState}>{emptyMessage}</p>;
-    const stickyActions = ['action', 'actions', 'account_action'].includes(columns.at(-1)?.key);
 
     return (
         <div className={styles.tableWrap}>
-            <table className={`${styles.dataTable} ${stickyActions ? styles.stickyActions : ''}`}>
+            <table className={styles.dataTable}>
                 <thead>
                     <tr>{columns.map((column) => <th key={column.key}>{column.label}</th>)}</tr>
                 </thead>
@@ -520,7 +519,7 @@ export default function ManagerWorkspace({ requiredRole }) {
                                             <button className={styles.approveButton} type="submit" disabled={creatingOrder || !newOrderProductId || !newOrderQuantity}>
                                                 {creatingOrder ? 'Creating…' : 'Create Order'}
                                             </button>
-                                            <button type="button" className={styles.textAction} onClick={() => setShowCreateOrderForm(false)}>Cancel</button>
+                                            <button type="button" className={styles.cancelButton} onClick={() => setShowCreateOrderForm(false)}>Cancel</button>
                                         </form>
                                     )}
                                 </section>

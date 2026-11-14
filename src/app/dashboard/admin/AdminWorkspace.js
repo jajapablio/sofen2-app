@@ -27,11 +27,10 @@ const navigation = [
 ];
 function DataTable({ columns, rows, emptyMessage, className = '', columnWidths }) {
     if (!rows.length) return <p className={styles.emptyState}>{emptyMessage}</p>;
-    const stickyActions = ['action', 'actions', 'account_action'].includes(columns.at(-1)?.key);
 
     return (
         <div className={styles.tableWrap}>
-            <table className={`${styles.dataTable} ${className} ${stickyActions ? styles.stickyActions : ''}`}>
+            <table className={`${styles.dataTable} ${className}`}>
                 {columnWidths && <colgroup>{columnWidths.map((width, index) => <col key={columns[index].key} style={width ? { width } : undefined} />)}</colgroup>}
                 <thead><tr>{columns.map((column) => <th key={column.key}>{column.label}</th>)}</tr></thead>
                 <tbody>
@@ -688,7 +687,7 @@ export default function AdminWorkspace() {
                                 </section>
                                 {productForm && (
                                     <section className={styles.panel}>
-                                        <div className={styles.panelHeading}><div><h2>{productForm.id ? 'Edit product' : 'Add master product'}</h2></div><button className={styles.textAction} type="button" onClick={() => { setSelectedProductImage(''); setProductForm(null); }}>Cancel</button></div>
+                                        <div className={styles.panelHeading}><div><h2>{productForm.id ? 'Edit product' : 'Add master product'}</h2></div><button className={styles.cancelButton} type="button" onClick={() => { setSelectedProductImage(''); setProductForm(null); }}>Cancel</button></div>
                                         <form className={styles.adminForm} onSubmit={saveProduct}>
                                             <label>SKU<input name="sku" defaultValue={productForm.sku || ''} maxLength={50} required /></label>
                                             <label>Product name<input name="name" defaultValue={productForm.name || ''} required /></label>

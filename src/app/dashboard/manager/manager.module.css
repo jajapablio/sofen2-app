@@ -935,18 +935,12 @@
 }
 .container button.textAction:not(:disabled):hover { text-decoration: underline; }
 
-/* Consistent opaque action columns for inventory, requests and staff access. */
-.stickyActions { min-width: 680px; }
-.container .stickyActions th:last-child,
-.container .stickyActions td:last-child {
-    position: sticky;
-    right: 0;
-    z-index: 2;
-    min-width: 96px;
-    background: #ffffff;
-    background-image: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: -1px 0 #e5eaf0;
-    text-align: right;
+
+.container button.cancelButton {
+    min-height: 36px; padding: 8px 16px; justify-self: start;
+    border: 1px solid #8fa4c5; border-radius: 6px;
+    background: rgba(255,255,255,.65); color: #334155;
+    font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
 }
+.container button.cancelButton:not(:disabled):hover { border-color: #4267a4; background-color: rgba(231,239,255,.9); }
+.container button.cancelButton:focus-visible { outline: 2px solid #0044ff; outline-offset: 3px; }
