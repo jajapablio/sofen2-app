@@ -686,7 +686,6 @@ export default function CashierConnectedWorkspace() {
                             {paymentOutcome?.status === 'paid_simulated' ? (
                                 <div className="paymentReceiptSummary">
                                     <h3><CheckCircle2 size={19} /> Payment successful</h3>
-                                    <p className="receiptDisclosure">Test receipt</p>
                                     <div className="paymentReceiptDetails">
                                         <span>Reference<strong>{paymentRecord?.transaction_reference}</strong></span>
                                         <span>Receipt<strong>{paymentRecord?.receipt_number || paymentOutcome.receipt_number || '—'}</strong></span>
