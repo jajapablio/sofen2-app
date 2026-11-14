@@ -553,7 +553,7 @@ export default function AdminWorkspace() {
     const initials = (profile?.full_name || 'Admin').split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} dashboard-glass-buttons`}>
             <aside ref={sidebarRef} className={styles.sidebar}>
                 <InteractiveParticles />
                 <div className={styles.sidebarHeader}>

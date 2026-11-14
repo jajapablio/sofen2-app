@@ -857,3 +857,8 @@
 }
 
 .integrationRow { background: var(--dashboard-inner-glass); border-color: var(--dashboard-glass-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); -webkit-backdrop-filter: var(--dashboard-glass-blur); backdrop-filter: var(--dashboard-glass-blur); }
+
+.fileButton { background: var(--dashboard-inner-glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 9px rgba(25,54,116,.07); }
+
+.primaryButton, .refreshBtn { background-color: rgba(23,72,200,.9); }
+.secondaryButton { background-color: rgba(255,255,255,.55); }

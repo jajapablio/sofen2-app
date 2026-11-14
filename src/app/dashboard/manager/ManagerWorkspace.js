@@ -341,7 +341,7 @@ export default function ManagerWorkspace({ requiredRole }) {
         .toUpperCase();
 
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} dashboard-glass-buttons`}>
             <aside ref={sidebarRef} className={styles.sidebar}>
                 <InteractiveParticles />
                 <div className={styles.sidebarHeader}>

@@ -520,7 +520,7 @@ export default function CashierConnectedWorkspace() {
     };
 
     return (
-        <main className="workspace">
+        <main className="workspace dashboard-glass-buttons">
             <section className="products">
                 <header className="header">
                     <div>

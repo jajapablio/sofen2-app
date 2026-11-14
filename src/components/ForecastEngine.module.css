@@ -30,3 +30,5 @@
     backdrop-filter: var(--dashboard-glass-blur);
 }
 @media (prefers-reduced-transparency: reduce) { .metric { border-color: #e2e8f0; } }
+
+.footer button { background-color: rgba(0,68,255,.88); }
