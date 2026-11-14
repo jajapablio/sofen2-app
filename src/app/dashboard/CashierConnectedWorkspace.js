@@ -549,8 +549,8 @@ export default function CashierConnectedWorkspace() {
                             onChange={(event) => setSearch(event.target.value)}
                         />
                     </form>
-                    <button className="utilityButton" type="button" onClick={() => setReloadKey((current) => current + 1)} disabled={loading}>
-                        <i className="fas fa-sync-alt" aria-hidden="true" /> Refresh catalog
+                    <button className="utilityButton refreshCatalogButton" type="button" onClick={() => setReloadKey((current) => current + 1)} disabled={loading}>
+                        <i className="fas fa-sync-alt" aria-hidden="true" /> Refresh
                     </button>
                 </div>
 
