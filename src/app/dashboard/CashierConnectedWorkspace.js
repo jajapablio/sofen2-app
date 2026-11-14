@@ -528,7 +528,7 @@ export default function CashierConnectedWorkspace() {
                         <h1>Point of sale</h1>
                     </div>
                     <div className="headerActions">
-                        {store && <span className="connection online"><span />{store.name}</span>}
+                        {store && <span className="connection online"><span aria-hidden="true" />{store.name}</span>}
                         <span className="cashierInfo">{profile?.full_name || 'Cashier'}</span>
                         <button className="iconButton" type="button" onClick={logout}>
                             <i className="fas fa-sign-out-alt" aria-hidden="true" /> Log out
