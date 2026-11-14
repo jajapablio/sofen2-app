@@ -849,9 +849,11 @@
     border: 1px solid var(--dashboard-glass-border);
     border-radius: 12px;
     box-shadow: var(--dashboard-glass-shadow);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: var(--dashboard-glass-blur);
+    backdrop-filter: var(--dashboard-glass-blur);
 }
 @media (prefers-reduced-transparency: reduce) {
 .panel, .metricCard { -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
+
+.integrationRow { background: var(--dashboard-inner-glass); border-color: var(--dashboard-glass-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); -webkit-backdrop-filter: var(--dashboard-glass-blur); backdrop-filter: var(--dashboard-glass-blur); }
