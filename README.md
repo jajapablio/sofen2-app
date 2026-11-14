@@ -73,3 +73,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ### Guest QR verification
 
 Scan a freshly generated QR using the deployed HTTPS site. Test invalid, expired and canceled links, then scan/refresh a completed payment twice and verify only one sale and inventory deduction. Only the server-authenticated cashier can create or cancel payments. The guest endpoint accepts no amount, cart or user ID from the scanner. Existing QR codes without a signed token must be regenerated.
+
+### Installable app (PWA)
+
+Open the production HTTPS domain in Chrome or Edge and choose Install app (or the browser menu → Install app / Add to Home screen). The login page offers installation when the browser supports it. On iPhone/iPad, open the site in Safari → Share → Add to Home Screen. Installed launches open the login/home route in a standalone window.
+
+The service worker caches only the offline page and public icons. Account pages, API calls, Supabase responses, inventory and payments are never cached by the service worker or queued for offline submission. Internet access is required for sales and payment processing. Installation availability depends on the browser; the development server does not register the worker.

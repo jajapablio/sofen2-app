@@ -1,0 +1,7 @@
+.banner { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 100; width: min(560px, calc(100% - 24px)); display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px 42px 16px 16px; border: 1px solid #dce4f2; border-radius: 12px; background: white; color: #263442; box-shadow: 0 8px 30px #001f9c26; }
+.banner > div { flex: 1 1 220px; }
+.banner strong { font-size: 14px; }
+.banner p { margin: 4px 0 0; font-size: 12px; line-height: 1.6; color: #667085; }
+.install { border: 0; border-radius: 6px; padding: 12px 16px; background: #0044ff; color: white; font: inherit; font-size: 12px; cursor: pointer; }
+.close { position: absolute; top: 5px; right: 5px; width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: #667085; font-size: 24px; cursor: pointer; }
+.banner button:focus-visible { outline: 2px solid #0044ff; outline-offset: 2px; }
