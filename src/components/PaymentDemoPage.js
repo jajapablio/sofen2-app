@@ -74,7 +74,6 @@ export default function PaymentDemoPage({ paymentId }) {
             <section className={styles.panel}>
                 <p className={styles.eyebrow}>PREDICTPOS · QRPH</p>
                 <h1>{paid ? 'Payment successful' : canceled ? 'Payment canceled' : loading ? 'Loading payment…' : processing === 'pay' ? 'Processing payment…' : processing === 'cancel' ? 'Canceling payment…' : pending ? 'Confirm QRPH payment' : 'Payment not completed'}</h1>
-                <p className={styles.disclosure}>Test mode · No real money is transferred</p>
                 {processing && <p className={styles.message} role="status"><Clock3 size={18} /> Please wait while we update your payment.</p>}
                 {error && <div className={styles.error} role="alert">{error}</div>}
                 {payment && <>
@@ -87,7 +86,6 @@ export default function PaymentDemoPage({ paymentId }) {
                 </>}
                 {paid && <section className={styles.receipt}>
                     <h2><CheckCircle2 size={19} /> Payment receipt</h2>
-                    <p className={styles.warning}>Test receipt</p>
                     <dl className={styles.details}>
                         <div><dt>Receipt</dt><dd>{payment.receipt_number || '—'}</dd></div>
                         <div><dt>Transaction date</dt><dd>{new Date(payment.completed_at || payment.created_at).toLocaleString()}</dd></div>
