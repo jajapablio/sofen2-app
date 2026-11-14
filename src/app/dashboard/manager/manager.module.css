@@ -150,7 +150,7 @@
 }
 
 .navItem.active {
-	box-shadow: inset 3px 0 #96c93d;
+	box-shadow: inset 3px 0 #ffffff;
 }
 
 .backLink {
@@ -923,3 +923,5 @@
 
 .approveButton, .refreshBtn, .employeeForm .approveButton, .chartSwitch button[aria-pressed="true"] { background-color: #0044ff; color: #fff; }
 .approveButton:not(:disabled):hover, .refreshBtn:not(:disabled):hover, .employeeForm .approveButton:not(:disabled):hover, .chartSwitch button[aria-pressed="true"]:not(:disabled):hover { background-color: #001f9c; color: #fff; }
+
+.container .navItem.active, .container .navItem:not(:disabled):hover { box-shadow: inset 3px 0 #fff, inset 0 1px 0 rgba(255,255,255,.3), 0 3px 9px rgba(25,54,116,.09); }
