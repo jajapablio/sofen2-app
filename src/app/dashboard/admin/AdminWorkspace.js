@@ -25,12 +25,13 @@ const navigation = [
     { id: 'security', label: 'Security & Audit', icon: 'fa-shield-alt' },
     { id: 'settings', label: 'Store Settings', icon: 'fa-sliders-h' },
 ];
-function DataTable({ columns, rows, emptyMessage }) {
+function DataTable({ columns, rows, emptyMessage, className = '', columnWidths }) {
     if (!rows.length) return <p className={styles.emptyState}>{emptyMessage}</p>;
 
     return (
         <div className={styles.tableWrap}>
-            <table className={styles.dataTable}>
+            <table className={`${styles.dataTable} ${className}`}>
+                {columnWidths && <colgroup>{columnWidths.map((width, index) => <col key={columns[index].key} style={width ? { width } : undefined} />)}</colgroup>}
                 <thead><tr>{columns.map((column) => <th key={column.key}>{column.label}</th>)}</tr></thead>
                 <tbody>
                     {rows.map((row) => (
@@ -657,8 +658,12 @@ export default function AdminWorkspace() {
                                 <section className={styles.panel} aria-label="Purchase orders">
                                     <div className={styles.panelHeading}><div><h2>Purchase orders</h2><p>{pendingOrderCount} pending approval</p></div></div>
                                     {orderError && <p className={styles.errorState} role="alert">{orderError}</p>}
-                                    <DataTable columns={[
+                                    <DataTable className={styles.inventoryTable} columnWidths={['190px', '64px', null, '80px', '140px', '156px']} columns={[
                                         { key: 'created_at', label: 'Created', render: (order) => dateTime(order.created_at) },
+                                        { key: 'photo', label: 'Photo', render: (order) => {
+                                            const product = products.find((item) => item.id === order.product_id);
+                                            return product?.image_url ? <Image src={product.image_url} alt={`${product.name} product`} width={42} height={42} unoptimized className={styles.productThumbnail} /> : <span className={styles.orderPhotoPlaceholder} aria-label="No product photo"><i className="fas fa-box" aria-hidden="true" /></span>;
+                                        } },
                                         { key: 'product_id', label: 'Product', render: (order) => products.find((product) => product.id === order.product_id)?.name || 'Unavailable product' },
                                         { key: 'suggested_quantity', label: 'Quantity' },
                                         { key: 'status', label: 'Status', render: (order) => order.status === 'pending_approval' ? 'Pending approval' : order.status.replaceAll('_', ' ') },
@@ -667,7 +672,7 @@ export default function AdminWorkspace() {
                                 </section>
                                 <section className={styles.panel}>
                                     <div className={styles.panelHeading}><div><h2>Master SKU registry</h2><p>Products for your assigned store</p></div><div className={styles.toolbar}><button className={styles.secondaryButton} type="button" onClick={exportProducts}>Export CSV</button><label className={styles.fileButton}>Import CSV<input type="file" accept=".csv,text/csv" onChange={importProducts} /></label><button className={styles.primaryButton} type="button" onClick={() => { setSelectedProductImage(''); setProductForm({}); }}>Add product</button></div></div>
-                                    <DataTable
+                                    <DataTable className={styles.inventoryTable} columnWidths={['100px', '64px', null, '100px', '100px', '100px', '64px', '80px', '156px']}
                                         columns={[
                                             { key: 'sku', label: 'SKU' }, { key: 'photo', label: 'Photo', render: (product) => product.image_url ? <Image src={product.image_url} alt={`${product.name} product`} width={42} height={42} unoptimized className={styles.productThumbnail} /> : '—' }, { key: 'name', label: 'Product' }, { key: 'category', label: 'Category' },
                                             { key: 'store_id', label: 'Store', render: (product) => storeNames.get(product.store_id) || 'Unknown' },

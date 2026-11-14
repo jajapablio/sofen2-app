@@ -828,3 +828,12 @@
 	.trendColumn small { font-size: 6px; }
 }
 .pendingOrderBadge { margin-left: auto; padding: 3px 6px; border-radius: 4px; background: white; color: #1748c8; font-size: 10px; white-space: nowrap; }
+
+/* Use the same action column position in both inventory tables. */
+.inventoryTable { table-layout: fixed; min-width: 1000px; }
+.inventoryTable th, .inventoryTable td { vertical-align: middle; overflow-wrap: anywhere; }
+.inventoryTable td:last-child button { min-height: 36px; }
+.inventoryTable td:last-child .primaryButton { padding: 9px 12px; font-size: 12px; }
+.orderPhotoPlaceholder { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 6px; background: #edf2fa; color: #8795aa; }
+.inventoryTable td { white-space: normal; }
+.inventoryTable td:last-child button { white-space: nowrap; }
