@@ -914,3 +914,13 @@
     80% { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, -20px); }
 }
+.workspace { background: var(--dashboard-backdrop); }
+.workspace .recentSales, .workspace .order {
+    background: var(--dashboard-glass);
+    border: 1px solid var(--dashboard-glass-border);
+    box-shadow: var(--dashboard-glass-shadow);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+.workspace .productCard { background: rgba(255, 255, 255, .88); border-color: var(--dashboard-glass-border); box-shadow: 0 4px 14px rgba(28, 63, 133, .04); }
+@media (prefers-reduced-transparency: reduce) { .workspace .recentSales, .workspace .order { -webkit-backdrop-filter: none; backdrop-filter: none; } }

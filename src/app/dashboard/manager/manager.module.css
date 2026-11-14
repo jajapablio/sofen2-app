@@ -903,3 +903,16 @@
 .salesChartHeader h2 { color: #263442; font-size: 18px; font-weight: 700; }
 @media (min-width: 701px) and (max-width: 1100px) { .forecastPanel { grid-column: span 1; } }
 @media (max-width: 700px) { .forecastPanel { grid-column: 1 / -1; } }
+
+.container { background: var(--dashboard-backdrop); }
+.card {
+    background: var(--dashboard-glass);
+    border: 1px solid var(--dashboard-glass-border);
+    border-radius: 12px;
+    box-shadow: var(--dashboard-glass-shadow);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+@media (prefers-reduced-transparency: reduce) {
+.card { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

@@ -842,3 +842,16 @@
 .inventoryTable td:last-child .primaryButton { padding: 9px 10px; font-size: 11px; }
 .inventoryTable td { line-height: 1.5; }
 .inventoryTable th { white-space: normal; }
+
+.container { background: var(--dashboard-backdrop); }
+.panel, .metricCard {
+    background: var(--dashboard-glass);
+    border: 1px solid var(--dashboard-glass-border);
+    border-radius: 12px;
+    box-shadow: var(--dashboard-glass-shadow);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+@media (prefers-reduced-transparency: reduce) {
+.panel, .metricCard { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

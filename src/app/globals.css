@@ -796,3 +796,13 @@ body {
     80% { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, -20px); }
 }
+/* Shared, restrained glass surfaces for dashboard cards. */
+:root {
+    --dashboard-glass: rgba(255, 255, 255, .84);
+    --dashboard-glass-border: rgba(255, 255, 255, .92);
+    --dashboard-glass-shadow: 0 8px 26px rgba(28, 63, 133, .065), inset 0 1px 0 rgba(255, 255, 255, .9);
+    --dashboard-backdrop: radial-gradient(ellipse at 12% 8%, rgba(0, 68, 255, .075), transparent 55%), radial-gradient(ellipse at 95% 80%, rgba(0, 180, 210, .065), transparent 55%), #f3f6fa;
+}
+@media (prefers-reduced-transparency: reduce) {
+    :root { --dashboard-glass: #ffffff; --dashboard-glass-border: #e5eaf0; }
+}
