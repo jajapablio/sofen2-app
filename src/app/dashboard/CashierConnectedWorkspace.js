@@ -725,7 +725,7 @@ export default function CashierConnectedWorkspace() {
                                     )}
                                     {paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && (
                                         <div className="qrPaymentPanel">
-                                            <QRCodeSVG value={`${siteOrigin}/pay/demo/${paymentRecord.id}`} size={180} level="M" includeMargin aria-label="QRPH payment code" />
+                                            <QRCodeSVG value={`${siteOrigin}/pay/demo/${paymentRecord.id}#token=${encodeURIComponent(paymentRecord.qr_token || '')}`} size={180} level="M" includeMargin aria-label="QRPH payment code" />
                                             <p><QrCode size={14} /> Scan to open the payment page</p>
                                             <div><span>Transaction reference</span><strong>{paymentRecord.transaction_reference}</strong></div>
                                             <div><span>Amount</span><strong>{money(paymentRecord.amount)}</strong></div>

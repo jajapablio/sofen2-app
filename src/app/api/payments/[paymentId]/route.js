@@ -1,3 +1,4 @@
+import { createQrToken } from '../../../../lib/payments/qr-token';
 import { authenticatePaymentRequest } from '../../../../lib/payments/server';
 
 const uuidPattern = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
@@ -32,7 +33,7 @@ export async function GET(request, { params }) {
             return Response.json({ payment: expired || { ...payment, status: 'expired' } });
         }
 
-        return Response.json({ payment });
+        return Response.json({ payment: { ...payment, qr_token: payment.payment_method === 'qrph' ? createQrToken(payment) : undefined } });
     } catch (error) {
         return Response.json({ error: error.message || 'Unable to load payment status.' }, { status: 500 });
     }

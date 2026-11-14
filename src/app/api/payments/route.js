@@ -1,3 +1,4 @@
+import { createQrToken } from '../../../lib/payments/qr-token';
 import { randomUUID } from 'node:crypto';
 import { authenticatePaymentRequest } from '../../../lib/payments/server';
 
@@ -109,11 +110,11 @@ export async function POST(request) {
                 .eq('idempotency_key', idempotencyKey)
                 .maybeSingle();
             if (existingError) throw existingError;
-            if (existingPayment) return Response.json({ payment: existingPayment });
+            if (existingPayment) return Response.json({ payment: { ...existingPayment, qr_token: existingPayment.payment_method === 'qrph' ? createQrToken(existingPayment) : undefined } });
         }
         if (insertError) throw insertError;
 
-        return Response.json({ payment }, { status: 201 });
+        return Response.json({ payment: { ...payment, qr_token: paymentMethod === 'qrph' ? createQrToken(payment) : undefined } }, { status: 201 });
     } catch (error) {
         return Response.json({ error: error.message || 'Unable to start the simulated payment.' }, { status: 500 });
     }
