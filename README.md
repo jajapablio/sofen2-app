@@ -5,7 +5,7 @@ PThis is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next
 1. Back up the existing database and confirm the base PredictPOS schema is installed, including `profiles`, `stores`, `products`, `sales`, `sale_items`, the `payment_type` enum, and `record_sale_with_discount`. The checked-in `supabase/setup.sql` is empty in this workspace, so it cannot initialize a fresh database as-is.
 2. Run [`supabase/void_sale.sql`](supabase/void_sale.sql) once in Supabase SQL Editor as the project owner. This enables audited voids, percentage discounts, and item-level refunds.
 3. Run [`supabase/payment_simulator.sql`](supabase/payment_simulator.sql) as the project owner. It adds a separate demo-payment ledger, owner-only reads, atomic confirmation, and server-only admin metrics without changing existing sales tables.
-4. Copy `.env.example` to `.env.local` and fill in the Supabase project URL, anon/publishable key, and service-role key. The service-role key is used only by server API routes: never prefix it with `NEXT_PUBLIC_` or expose it to client code.
+4. Run `supabase/forecast_engine.sql` as the project owner. This creates the forecast tables, upgrades existing inventory forecasts, and installs the store-authorized generation function and shortage-alert view. Then copy `.env.example` to `.env.local` and fill in the Supabase project URL, anon/publishable key, and service-role key. The service-role key is used only by server API routes: never prefix it with `NEXT_PUBLIC_` or expose it to client code.
 5. Use **Sign up** once to create the administrator and first store. This endpoint closes owner signup after any store exists. The first admin enters their full name, username, business/store name, email, and password.
 6. The administrator signs in and opens the Staff section to add cashier and manager accounts. Employees can sign in with their username or email and are routed according to their `profiles.role`.
 7. Add products to `public.products` with the store UUID. Set `stores.tax_rate` as a decimal fraction (for example, `0.0800` for 8%). Configure Supabase Auth's site URL and redirect allow-list for the app origin so password reset links work.
@@ -65,3 +65,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Automated forecasts
+
+`supabase/forecast_engine.sql` installs the `refresh-store-forecasts` Cron job at minute 5 of every hour and generates the initial forecasts. It runs in the database without an open browser. Monitor runs in Supabase → Integrations → Cron. The manager overview shows generation timestamps and offers an authorized manual refresh for the assigned store. Stores without completed sales wait for history instead of displaying invented demand. Sales estimates cover 14 days and inventory demand covers 7 days; confidence is a history-based heuristic, not a calibrated probability.

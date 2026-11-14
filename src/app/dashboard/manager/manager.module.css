@@ -864,3 +864,33 @@
 		transition: none;
 	}
 }
+
+/* Keep alert copy aligned and fill both halves of the overview. */
+.grid > .chartCard { grid-column: 1 / -1; }
+.automationCard { grid-column: span 2; display: flex; flex-direction: column; gap: 16px; }
+.stackedHeader { display: flex; flex-direction: column; gap: 4px; }
+.stackedHeader h2, .stackedHeader p { margin: 0; }
+.stackedHeader .cardTitle { font-size: 14px; }
+.stackedHeader .cardSubtitle { line-height: 1.6; }
+.automationStatus { align-self: flex-start; padding: 6px 10px; border-radius: 20px; background: #edf3ff; color: #214bb0; font-size: 12px; font-weight: 600; }
+.forecastDetails { display: grid; gap: 12px; margin: 0; font-size: 12px; }
+.forecastDetails > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.forecastDetails dt { color: var(--muted); }
+.forecastDetails dd { margin: 0; color: var(--ink); }
+.automationCard button { align-self: flex-start; margin-top: auto; }
+.alertsCard .dataRow { align-items: flex-start; flex-wrap: wrap; }
+.alertsCard .dataRow > div { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 700px) { .automationCard { grid-column: 1 / -1; } }
+
+.barChart { grid-template-columns: repeat(14, minmax(58px, 1fr)); overflow-x: auto; padding-bottom: 8px; }
+@media (min-width: 701px) and (max-width: 1100px) {
+    .grid > .alertsCard, .automationCard { grid-column: span 1; }
+}
+
+.salesChartHeader { flex-wrap: wrap; align-items: center; }
+.salesChartHeader h2, .salesChartHeader p { margin: 0; }
+.salesChartHeader p { margin-top: 4px; }
+.chartSwitch { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: #f4f6fb; }
+.chartSwitch button { padding: 9px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.chartSwitch button[aria-pressed="true"] { background: var(--primary); color: white; }
+.chartSwitch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }

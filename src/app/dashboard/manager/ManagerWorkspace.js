@@ -45,6 +45,7 @@ function DataTable({ columns, rows, emptyMessage }) {
 export default function ManagerWorkspace({ requiredRole }) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
+    const [salesChartMode, setSalesChartMode] = useState('actual');
     const [isNavigationOpen, setIsNavigationOpen] = useState(false);
     const sidebarRef = useRef(null);
     const [profile, setProfile] = useState(null);
@@ -65,7 +66,6 @@ export default function ManagerWorkspace({ requiredRole }) {
     const [creatingOrder, setCreatingOrder] = useState(false);
     const [salesForecasts, setSalesForecasts] = useState([]);
     const [stockAlerts, setStockAlerts] = useState([]);
-    const [forecastGenerated, setForecastGenerated] = useState(false);
     const [generatingForecast, setGeneratingForecast] = useState(false);
 
     useEffect(() => {
@@ -149,16 +149,17 @@ export default function ManagerWorkspace({ requiredRole }) {
                     .select('id, full_name, username, role, is_active, created_at')
                     .order('full_name');
                 const forecastsQuery = supabase.from('inventory_forecasts')
-                    .select('id, product_id, forecast_date, predicted_demand, confidence_score, is_anomaly, products!inner(store_id)')
-                    .gte('forecast_date', today)
+                    .select('id, product_id, forecast_date, predicted_demand, confidence_score, is_anomaly, current_stock, suggested_restock, days_until_shortage, created_at, products!inner(store_id)')
+                    .gt('forecast_date', today)
                     .order('forecast_date')
                     .limit(50);
 
                 const salesForecastsQuery = supabase.from('sales_forecasts')
-                    .select('id, forecast_date, predicted_sales, confidence_score, actual_sales, variance_percent')
-                    .gte('forecast_date', today)
+                    .select('id, forecast_date, predicted_sales, confidence_score, actual_sales, variance_percent, created_at')
+                    .gt('forecast_date', today)
+                    .eq('period_type', 'daily')
                     .order('forecast_date', { ascending: true })
-                    .limit(30);
+                    .limit(500);
 
                 const stockAlertsQuery = supabase.from('stock_shortage_alerts')
                     .select('*')
@@ -199,7 +200,6 @@ export default function ManagerWorkspace({ requiredRole }) {
                 setStaff(results[5].data || []);
                 setSalesForecasts(results[6].data || []);
                 setStockAlerts(results[7].data || []);
-                setForecastGenerated(true);
             } catch (loadError) {
                 if (isCurrent) setError(loadError.message || 'Unable to load dashboard data.');
             } finally {
@@ -275,7 +275,6 @@ export default function ManagerWorkspace({ requiredRole }) {
 
             if (rpcError) throw rpcError;
 
-            setForecastGenerated(true);
             setRefreshKey((current) => current + 1);
         } catch (rpcError) {
             setActionError(rpcError.message || 'Unable to generate forecasts.');
@@ -291,6 +290,35 @@ export default function ManagerWorkspace({ requiredRole }) {
             router.replace('/');
         }
     };
+
+    const dailyForecasts = Array.from(salesForecasts.reduce((days, row) => {
+        const previous = days.get(row.forecast_date);
+        days.set(row.forecast_date, {
+            id: row.forecast_date,
+            forecast_date: row.forecast_date,
+            predicted_sales: Number(row.predicted_sales) + (previous?.predicted_sales || 0),
+            confidence_score: previous ? Math.min(previous.confidence_score, Number(row.confidence_score)) : Number(row.confidence_score),
+        });
+        return days;
+    }, new Map()).values()).sort((a, b) => a.forecast_date.localeCompare(b.forecast_date));
+    const salesDay = (value) => new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date(value));
+    const actualTotals = sales.reduce((totals, sale) => {
+        const key = salesDay(sale.created_at);
+        totals.set(key, (totals.get(key) || 0) + Number(sale.total_amount));
+        return totals;
+    }, new Map());
+    const todayInManila = new Date(`${salesDay(new Date())}T12:00:00Z`);
+    const actualDailySales = Array.from({ length: 14 }, (_, index) => {
+        const day = new Date(todayInManila);
+        day.setUTCDate(day.getUTCDate() - 13 + index);
+        const key = day.toISOString().slice(0, 10);
+        return { id: key, forecast_date: key, predicted_sales: actualTotals.get(key) || 0 };
+    });
+    const chartDays = salesChartMode === 'actual' ? actualDailySales : dailyForecasts;
+    const salesChartMax = Math.max(1, ...chartDays.map((row) => Number(row.predicted_sales)));
+
 
     const weekStart = new Date();
     weekStart.setHours(0, 0, 0, 0);
@@ -398,77 +426,60 @@ export default function ManagerWorkspace({ requiredRole }) {
                     <>
                         {activeTab === 'overview' && (
                             <div className={styles.grid}>
-                                {!forecastGenerated && (
-                                    <section className={`${styles.card} ${styles.wideCard}`}>
-                                        <div className={styles.cardHeader}>
-                                            <div className={styles.cardTitle}>Sales Forecast Engine</div>
-                                            <div className={styles.cardSubtitle}>Generate AI-powered sales and inventory forecasts for your store</div>
-                                        </div>
-                                        <div className={styles.forecastBanner}>
-                                            <p>No forecasts have been generated yet. Click below to analyze your sales history and predict future demand.</p>
-                                            <button className={styles.approveButton} type="button" onClick={generateForecasts} disabled={generatingForecast}>
-                                                {generatingForecast ? 'Generating forecasts…' : 'Generate Forecasts Now'}
-                                            </button>
-                                        </div>
-                                    </section>
-                                )}
                                 {salesForecasts.length > 0 && (
                                     <>
                                         <section className={`${styles.card} ${styles.kpiCard}`}>
                                             <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Tomorrow</span><i className="fas fa-calendar-day" /></div>
-                                            <div className={styles.kpiValue}>{money(salesForecasts[0]?.predicted_sales || 0)}</div>
-                                            <div className={styles.kpiSubtitle}>Confidence: {salesForecasts[0]?.confidence_score}%</div>
+                                            <div className={styles.kpiValue}>{money(dailyForecasts[0]?.predicted_sales || 0)}</div>
+                                            <div className={styles.kpiSubtitle}>Confidence: {dailyForecasts[0]?.confidence_score}%</div>
                                         </section>
                                         <section className={`${styles.card} ${styles.kpiCard}`}>
                                             <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Next 7 Days</span><i className="fas fa-calendar-week" /></div>
-                                            <div className={styles.kpiValue}>{money(salesForecasts.slice(0, 7).reduce((sum, f) => sum + Number(f.predicted_sales), 0))}</div>
-                                            <div className={styles.kpiSubtitle}>Based on 90-day sales history</div>
+                                            <div className={styles.kpiValue}>{money(dailyForecasts.slice(0, 7).reduce((sum, f) => sum + Number(f.predicted_sales), 0))}</div>
+                                            <div className={styles.kpiSubtitle}>Up to 90 days of recorded sales</div>
                                         </section>
                                         <section className={`${styles.card} ${styles.kpiCard}`}>
-                                            <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Next 30 Days</span><i className="fas fa-calendar" /></div>
-                                            <div className={styles.kpiValue}>{money(salesForecasts.slice(0, 30).reduce((sum, f) => sum + Number(f.predicted_sales), 0))}</div>
-                                            <div className={styles.kpiSubtitle}>Monthly revenue forecast</div>
+                                            <div className={styles.cardHeader}><span className={styles.cardTitle}>Predicted Sales · Next 14 Days</span><i className="fas fa-calendar" /></div>
+                                            <div className={styles.kpiValue}>{money(dailyForecasts.slice(0, 14).reduce((sum, f) => sum + Number(f.predicted_sales), 0))}</div>
+                                            <div className={styles.kpiSubtitle}>Two-week revenue forecast</div>
                                         </section>
                                         <section className={`${styles.card} ${styles.kpiCard}`}>
                                             <div className={styles.cardHeader}><span className={styles.cardTitle}>Forecast Confidence</span><i className="fas fa-percentage" /></div>
-                                            <div className={styles.kpiValue}>{salesForecasts[0]?.confidence_score || 0}%</div>
+                                            <div className={styles.kpiValue}>{dailyForecasts[0]?.confidence_score || 0}%</div>
                                             <div className={styles.kpiSubtitle}>Based on {sales.length} recent sales</div>
                                         </section>
                                     </>
                                 )}
-                                {salesForecasts.length > 0 && (
-                                    <section className={`${styles.card} ${styles.chartCard}`}>
-                                        <div className={styles.cardHeader}>
-                                            <div><div className={styles.cardTitle}>Sales Forecast · Next 14 Days</div><div className={styles.cardSubtitle}>Predicted vs historical daily sales</div></div>
+                                <section className={`${styles.card} ${styles.chartCard}`} aria-label="Sales chart">
+                                    <div className={`${styles.cardHeader} ${styles.salesChartHeader}`}>
+                                        <div>
+                                            <h2 className={styles.cardTitle}>{salesChartMode === 'actual' ? 'Actual Sales · Last 14 Days' : 'Sales Forecast · Next 14 Days'}</h2>
+                                            <p className={styles.cardSubtitle}>{salesChartMode === 'actual' ? 'Daily completed sales totals · Philippine time · Today included' : 'Upcoming daily sales estimates'}</p>
                                         </div>
-                                        <div className={styles.barChart}>
-                                            {salesForecasts.map((forecast) => {
-                                                const actual = sales.find((s) => dateKey(new Date(s.created_at)) === forecast.forecast_date);
-                                                const actualAmount = actual ? Number(actual.total_amount) : 0;
-                                                return (
-                                                    <div className={styles.barColumn} key={forecast.forecast_date}>
-                                                        <span className={styles.barLabel}>{new Date(forecast.forecast_date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                                                        <div className={styles.barTrack}>
-                                                            <div className={styles.bar} style={{ background: '#0044ff', height: `${Math.max(4, Number(forecast.predicted_sales) / 1000 * 100)}%` }} />
-                                                            {actualAmount > 0 && (
-                                                                <div className={styles.bar} style={{ background: '#00b09b', height: `${Math.max(4, actualAmount / 1000 * 100)}%` }} />
-                                                            )}
-                                                        </div>
-                                                        <span className={styles.barValue}>{money(forecast.predicted_sales)}</span>
+                                        <div className={styles.chartSwitch} role="group" aria-label="Sales chart view">
+                                            <button type="button" aria-pressed={salesChartMode === 'actual'} onClick={() => setSalesChartMode('actual')}>Actual Sales</button>
+                                            <button type="button" aria-pressed={salesChartMode === 'forecast'} onClick={() => setSalesChartMode('forecast')}>Predictive Forecast</button>
+                                        </div>
+                                    </div>
+                                    {chartDays.length ? (
+                                        <div className={styles.barChart} aria-label={salesChartMode === 'actual' ? 'Actual daily sales' : 'Predicted daily sales'}>
+                                            {chartDays.map((day) => (
+                                                <div className={styles.barColumn} key={day.id} title={`${day.forecast_date}: ${money(day.predicted_sales)}`}>
+                                                    <span className={styles.barLabel}>{new Date(`${day.forecast_date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                                    <div className={styles.barTrack}>
+                                                        <div className={styles.bar} style={{ background: salesChartMode === 'actual' ? '#008675' : '#0044ff', height: `${Number(day.predicted_sales) > 0 ? Math.max(1, Number(day.predicted_sales) / salesChartMax * 100) : 0}%` }} />
                                                     </div>
-                                                );
-                                            })}
+                                                    <span className={styles.barValue}>{money(day.predicted_sales)}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <p className={styles.chartLegend}>
-                                            <span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#0044ff', borderRadius: '2px', marginRight: '6px' }} /> Predicted
-                                            <span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#00b09b', borderRadius: '2px', marginRight: '6px', marginLeft: '16px' }} /> Actual
-                                        </p>
-                                    </section>
-                                )}
+                                    ) : <p className={styles.emptyState}>Predictions will appear after forecasts are generated from completed sales.</p>}
+                                    {salesChartMode === 'actual' && !actualDailySales.some((day) => day.predicted_sales > 0) && <p className={styles.cardSubtitle}>No completed sales in the last 14 days.</p>}
+                                </section>
 
                                 <section className={`${styles.card} ${styles.alertsCard}`}>
-                                    <div className={styles.cardHeader}>
-                                        <div className={styles.cardTitle}>⚠️ Stock Shortage Alerts</div>
+                                    <div className={styles.stackedHeader}>
+                                        <h2 className={styles.cardTitle}>Stock Shortage Alerts</h2>
                                         <div className={styles.cardSubtitle}>Products that may run out based on predicted demand</div>
                                     </div>
                                     {stockAlerts.length > 0 ? (
@@ -476,12 +487,12 @@ export default function ManagerWorkspace({ requiredRole }) {
                                             {stockAlerts.map((alert) => (
                                                 <div className={styles.dataRow} key={alert.product_id}>
                                                     <div>
-                                                        <strong>{alert.product_name}</strong><br />
+                                                        <strong>{alert.product_name}</strong>
                                                         <span style={{ fontSize: '12px', color: '#666' }}>{alert.sku} · {alert.store_name}</span>
                                                     </div>
                                                     <div style={{ textAlign: 'right' }}>
                                                         <div style={{ color: alert.days_until_shortage <= 3 ? '#c0392b' : '#e67e22', fontWeight: 'bold' }}>
-                                                            {alert.days_until_shortage === 0 ? 'OUT OF STOCK' : `Shortage in {alert.days_until_shortage} days`}
+                                                            {alert.days_until_shortage === 0 ? 'OUT OF STOCK' : `Shortage in ${alert.days_until_shortage} ${alert.days_until_shortage === 1 ? 'day' : 'days'}`}
                                                         </div>
                                                         <div style={{ fontSize: '12px' }}>Restock: {alert.suggested_restock} units</div>
                                                     </div>
@@ -489,8 +500,24 @@ export default function ManagerWorkspace({ requiredRole }) {
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className={styles.emptyState}>No stock shortage alerts. Your inventory levels look healthy.</p>
+                                        <p className={styles.emptyState}>{forecasts.length ? 'No predicted shortages in the next 7 days.' : 'Shortage predictions will appear once sales history is available.'}</p>
                                     )}
+                                </section>
+
+                                <section className={`${styles.card} ${styles.automationCard}`}>
+                                    <div className={styles.stackedHeader}>
+                                        <h2 className={styles.cardTitle}>Automated Forecast</h2>
+                                        <p className={styles.cardSubtitle}>Sales and inventory predictions refresh hourly, even when this dashboard is closed.</p>
+                                    </div>
+                                    <span className={styles.automationStatus}>{salesForecasts.length ? 'Forecasts available' : 'Waiting for sales history'}</span>
+                                    <dl className={styles.forecastDetails}>
+                                        <div><dt>Last generated</dt><dd>{salesForecasts.length ? dateTime(salesForecasts.reduce((latest, row) => row.created_at > latest ? row.created_at : latest, '')) : 'No forecast yet'}</dd></div>
+                                        <div><dt>Forecast horizon</dt><dd>14 days of sales · 7 days of demand</dd></div>
+                                    </dl>
+                                    <p className={styles.cardSubtitle}>Estimates use recorded sales trends. Limited history produces less reliable predictions.</p>
+                                    <button className={styles.approveButton} type="button" onClick={generateForecasts} disabled={generatingForecast || !profile?.store_id}>
+                                        {generatingForecast ? 'Updating forecasts…' : 'Update store forecast now'}
+                                    </button>
                                 </section>
 
                                 <section className={`${styles.card} ${styles.wideCard}`}>
@@ -508,7 +535,7 @@ export default function ManagerWorkspace({ requiredRole }) {
                                             { key: 'days_until_shortage', label: 'Days Until Shortage', render: (f) => f.days_until_shortage === null ? '—' : f.days_until_shortage === 0 ? 'NOW' : f.days_until_shortage },
                                         ]}
                                         rows={forecasts}
-                                        emptyMessage="Generate forecasts to see product demand predictions."
+                                        emptyMessage="Demand predictions appear automatically after completed sales are recorded."
                                     />
                                 </section>
 
