@@ -753,13 +753,14 @@ export default function CashierConnectedWorkspace() {
                                     )}
                                     {paymentRecord?.status === 'expired' && <p className="paymentError" role="alert">This payment expired. Start a new payment to continue.</p>}
                                     {paymentError && paymentRecord?.status !== 'failed' && paymentRecord?.status !== 'expired' && <p className="paymentError" role="alert">{paymentError}</p>}
+                                    {paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && qrSeconds > 0 && <p className="qrCountdown" role="status">Waiting for QR scan. Payment will be confirmed automatically.</p>}
                                     <div className="dialogActions">
                                         <button className="utilityButton" type="button" onClick={paymentRecord?.status === 'pending' ? cancelPayment : () => setIsPaymentOpen(false)} disabled={isSubmitting}>
                                             {paymentRecord?.status === 'pending' ? 'Cancel payment' : 'Close'}
                                         </button>
-                                        <button className="primaryButton" type="button" onClick={recordSale} disabled={isSubmitting || (paymentMethod === 'cash' && received < total) || (paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && qrSeconds === 0)}>
-                                            {isSubmitting ? 'Processing…' : paymentMethod === 'qrph' ? paymentRecord?.status === 'pending' ? 'Confirm payment' : 'Create QR payment' : paymentMethod === 'card' ? 'Pay by card' : 'Complete payment'}
-                                        </button>
+                                        {!(paymentMethod === 'qrph' && paymentRecord?.status === 'pending') && <button className="primaryButton" type="button" onClick={recordSale} disabled={isSubmitting || (paymentMethod === 'cash' && received < total) || (paymentMethod === 'qrph' && paymentRecord?.status === 'pending' && qrSeconds === 0)}>
+                                            {isSubmitting ? 'Processing…' : paymentMethod === 'qrph' ? 'Create QR payment' : paymentMethod === 'card' ? 'Pay by card' : 'Complete payment'}
+                                        </button>}
                                     </div>
                                 </>
                             )}
