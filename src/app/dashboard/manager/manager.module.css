@@ -920,3 +920,6 @@
 .contextTag { background: var(--dashboard-inner-glass); border-color: var(--dashboard-glass-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); -webkit-backdrop-filter: var(--dashboard-glass-blur); backdrop-filter: var(--dashboard-glass-blur); }
 
 .approveButton, .refreshBtn { background-color: rgba(0,68,255,.88); }
+
+.approveButton, .refreshBtn, .employeeForm .approveButton, .chartSwitch button[aria-pressed="true"] { background-color: #0044ff; color: #fff; }
+.approveButton:not(:disabled):hover, .refreshBtn:not(:disabled):hover, .employeeForm .approveButton:not(:disabled):hover, .chartSwitch button[aria-pressed="true"]:not(:disabled):hover { background-color: #001f9c; color: #fff; }

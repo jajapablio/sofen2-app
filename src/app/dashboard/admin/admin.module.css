@@ -862,3 +862,6 @@
 
 .primaryButton, .refreshBtn { background-color: rgba(23,72,200,.9); }
 .secondaryButton { background-color: rgba(255,255,255,.55); }
+
+.primaryButton, .refreshBtn { background-color: #0044ff; color: #fff; }
+.primaryButton:not(:disabled):hover, .refreshBtn:not(:disabled):hover { background-color: #001f9c; color: #fff; }

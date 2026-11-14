@@ -32,3 +32,6 @@
 @media (prefers-reduced-transparency: reduce) { .metric { border-color: #e2e8f0; } }
 
 .footer button { background-color: rgba(0,68,255,.88); }
+
+.footer button { background-color: #0044ff; color: #fff; }
+.footer button:not(:disabled):hover { background-color: #001f9c; color: #fff; }

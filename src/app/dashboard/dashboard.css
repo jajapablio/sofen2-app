@@ -951,3 +951,16 @@
 .workspace .utilityButton.refreshCatalogButton { background-color: #0044ff; color: #fff; border-color: #0044ff; }
 .workspace .utilityButton.refreshCatalogButton:not(:disabled):hover { background-color: #001f9c; }
 .workspace .utilityButton.refreshCatalogButton:disabled { opacity: .6; cursor: wait; }
+
+.workspace .primaryButton:not(:disabled),
+.workspace .searchForm button:not(:disabled),
+.workspace .checkoutButton:not(:disabled),
+.workspace .categories .activeCategory {
+    background-color: #0044ff;
+    color: #fff;
+    border-color: #0044ff;
+}
+.workspace .primaryButton:not(:disabled):hover,
+.workspace .searchForm button:not(:disabled):hover,
+.workspace .checkoutButton:not(:disabled):hover,
+.workspace .categories .activeCategory:hover { background-color: #001f9c; color: #fff; }
