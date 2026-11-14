@@ -10,14 +10,6 @@ const nextConfig = {
   /* config options here */
   allowedDevOrigins: lanOrigins,
   reactCompiler: true,
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
 };
 
 export default nextConfig;
