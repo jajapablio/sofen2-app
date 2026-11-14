@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InteractiveParticles from '../../../components/InteractiveParticles';
 import { getSupabaseClient } from '../../../lib/supabase/client';
+import RevenueTrend from '../../../components/RevenueTrend';
 import ForecastEngine from '../../../components/ForecastEngine';
 import EmployeeForm from './EmployeeForm';
 import styles from './manager.module.css';
@@ -46,7 +47,6 @@ function DataTable({ columns, rows, emptyMessage }) {
 export default function ManagerWorkspace({ requiredRole }) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
-    const [salesChartMode, setSalesChartMode] = useState('actual');
     const [isNavigationOpen, setIsNavigationOpen] = useState(false);
     const sidebarRef = useRef(null);
     const [profile, setProfile] = useState(null);
@@ -292,43 +292,6 @@ export default function ManagerWorkspace({ requiredRole }) {
         }
     };
 
-    const dailyForecasts = Array.from(salesForecasts.reduce((days, row) => {
-        const previous = days.get(row.forecast_date);
-        days.set(row.forecast_date, {
-            id: row.forecast_date,
-            forecast_date: row.forecast_date,
-            predicted_sales: Number(row.predicted_sales) + (previous?.predicted_sales || 0),
-            confidence_score: previous ? Math.min(previous.confidence_score, Number(row.confidence_score)) : Number(row.confidence_score),
-        });
-        return days;
-    }, new Map()).values()).sort((a, b) => a.forecast_date.localeCompare(b.forecast_date));
-    const salesDay = (value) => new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit',
-    }).format(new Date(value));
-    const actualTotals = sales.reduce((totals, sale) => {
-        const key = salesDay(sale.created_at);
-        totals.set(key, (totals.get(key) || 0) + Number(sale.total_amount));
-        return totals;
-    }, new Map());
-    const todayInManila = new Date(`${salesDay(new Date())}T12:00:00Z`);
-    const todayKey = todayInManila.toISOString().slice(0, 10);
-    const tomorrow = new Date(todayInManila);
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-    const tomorrowKey = tomorrow.toISOString().slice(0, 10);
-    const tomorrowForecast = dailyForecasts.find((day) => day.forecast_date === tomorrowKey);
-    const chartDays = Array.from({ length: 7 }, (_, index) => {
-        const offset = index - 3;
-        const date = new Date(todayInManila);
-        date.setUTCDate(date.getUTCDate() + offset);
-        const key = date.toISOString().slice(0, 10);
-        const predicted = salesChartMode === 'forecast' && offset === 1;
-        const amount = offset <= 0 ? (actualTotals.get(key) || 0)
-            : predicted && tomorrowForecast ? Number(tomorrowForecast.predicted_sales) : null;
-        return { key, offset, amount, predicted, label: offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : date.toLocaleDateString('en-PH', { timeZone: 'UTC', month: 'short', day: 'numeric' }) };
-    });
-    const salesChartMax = Math.max(1, ...chartDays.map((day) => day.amount || 0));
-
-
     const weekStart = new Date();
     weekStart.setHours(0, 0, 0, 0);
     weekStart.setDate(weekStart.getDate() - 6);
@@ -435,37 +398,7 @@ export default function ManagerWorkspace({ requiredRole }) {
                     <>
                         {activeTab === 'overview' && (
                             <div className={styles.grid}>
-                                <section className={`${styles.card} ${styles.chartCard}`} aria-label="Sales chart">
-                                    <div className={`${styles.cardHeader} ${styles.salesChartHeader}`}>
-                                        <div>
-                                            <h2 className={styles.cardTitle}>{salesChartMode === 'actual' ? 'Revenue trend' : 'Sales Forecast · Tomorrow'}</h2>
-                                            <p className={styles.cardSubtitle}>{salesChartMode === 'actual' ? 'Daily completed sales · Today centered · Philippine time' : 'Prediction for the next calendar day · Philippine time'}</p>
-                                        </div>
-                                        <div className={styles.chartSwitch} role="group" aria-label="Sales chart view">
-                                            <button type="button" aria-pressed={salesChartMode === 'actual'} onClick={() => setSalesChartMode('actual')}>Actual Sales</button>
-                                            <button type="button" aria-pressed={salesChartMode === 'forecast'} onClick={() => setSalesChartMode('forecast')}>Predictive Forecast</button>
-                                        </div>
-                                    </div>
-                                    <div className={`${styles.barChart} ${styles.centeredSalesChart}`} aria-label="Daily sales timeline">
-                                        {chartDays.map((day) => (
-                                            <div className={`${styles.barColumn} ${day.key === todayKey ? styles.todayColumn : ''}`} key={day.key} aria-current={day.key === todayKey ? 'date' : undefined} data-date={day.key} title={`${day.key}: ${day.amount === null ? 'Not available' : money(day.amount)}${day.predicted ? ' (predicted)' : ''}`}>
-                                                <span className={styles.barLabel}>{day.label}</span>
-                                                <div className={styles.barTrack}>
-                                                    {day.amount !== null && <div className={styles.bar} style={{ background: day.predicted ? '#0044ff' : '#008675', height: `${day.amount > 0 ? Math.max(1, day.amount / salesChartMax * 100) : 0}%` }} />}
-                                                </div>
-                                                <span className={styles.barValue}>{day.amount === null ? '—' : money(day.amount)}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className={styles.chartFooter}>
-                                        <p className={styles.cardSubtitle}>Green: actual sales{salesChartMode === 'forecast' ? ' · Blue: tomorrow’s prediction' : ''}. Today’s total is still in progress.</p>
-                                        <button className={styles.approveButton} type="button" onClick={generateForecasts} disabled={generatingForecast || !profile?.store_id}>
-                                            {generatingForecast ? 'Updating forecasts…' : 'Update store forecast now'}
-                                        </button>
-                                    </div>
-                                    {salesChartMode === 'forecast' && <p className={styles.cardSubtitle}>{tomorrowForecast ? `Tomorrow’s confidence: ${tomorrowForecast.confidence_score}%. Estimates refresh hourly; limited history may produce a daily-average prediction.` : 'Tomorrow’s prediction is not available yet. Update the forecast after completed sales are recorded.'}</p>}
-                                </section>
-
+                                <div className={styles.forecastPanel}><RevenueTrend sales={sales} /></div>
                                 <div className={styles.forecastPanel}><ForecastEngine forecasts={salesForecasts} alerts={stockAlerts} onRefresh={generateForecasts} busy={generatingForecast} disabled={!profile?.store_id} /></div>
 
                                 <section className={`${styles.card} ${styles.wideCard}`}>

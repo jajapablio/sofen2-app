@@ -6,6 +6,7 @@ import Papa from 'papaparse';
 import { useRouter } from 'next/navigation';
 import InteractiveParticles from '../../../components/InteractiveParticles';
 import { getSupabaseClient } from '../../../lib/supabase/client';
+import RevenueTrend from '../../../components/RevenueTrend';
 import ForecastEngine from '../../../components/ForecastEngine';
 import EmployeeForm from '../manager/EmployeeForm';
 import styles from './admin.module.css';
@@ -215,20 +216,7 @@ export default function AdminWorkspace() {
 
     const storeNames = useMemo(() => new Map(stores.map((store) => [store.id, store.name])), [stores]);
     const profileNames = useMemo(() => new Map(staff.map((member) => [member.id, member.full_name])), [staff]);
-    const salesDays = useMemo(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return Array.from({ length: 14 }, (_, index) => {
-            const date = new Date(today);
-            date.setDate(today.getDate() - 13 + index);
-            const key = localDateKey(date);
-            const amount = sales
-                .filter((sale) => localDateKey(new Date(sale.created_at)) === key)
-                .reduce((sum, sale) => sum + Number(sale.total_amount) - Number(sale.tax_amount), 0);
-            return { key, label: date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }), amount };
-        });
-    }, [sales]);
-    const maxSalesDay = Math.max(1, ...salesDays.map((day) => day.amount));
+
 
     const getAdminSession = async () => {
         const { data: { session }, error: sessionError } = await getSupabaseClient().auth.getSession();
@@ -587,12 +575,7 @@ export default function AdminWorkspace() {
                                 </div>
 
                                 <div className={styles.overviewGrid}>
-                                    <section className={styles.panel}>
-                                        <div className={styles.panelHeading}><div><h2>Revenue trend</h2><p>Daily net sales · last 14 days</p></div><span className={styles.liveLabel}>LIVE DATA</span></div>
-                                        <div className={styles.trendChart}>
-                                            {salesDays.map((day) => <div key={day.key} className={styles.trendColumn}><span>{day.amount ? money(day.amount) : ' '}</span><div className={styles.trendTrack}><i style={{ height: `${day.amount ? Math.max(4, day.amount / maxSalesDay * 100) : 0}%` }} /></div><small>{day.label}</small></div>)}
-                                        </div>
-                                    </section>
+                                    <RevenueTrend sales={sales} />
                                     <ForecastEngine forecasts={salesForecasts} alerts={stockAlerts} onRefresh={generateForecasts} busy={generatingForecast} />
                                     <section className={styles.panel}>
                                         <div className={styles.panelHeading}><div><h2>Store terminals</h2><p>Devices seen in the last five minutes</p></div><strong className={styles.networkCount}>{onlineDevices}/{devices.length}</strong></div>
