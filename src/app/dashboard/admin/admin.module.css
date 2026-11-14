@@ -837,7 +837,7 @@
 .orderPhotoPlaceholder { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 6px; background: #edf2fa; color: #8795aa; }
 .inventoryTable td { white-space: normal; }
 .inventoryTable td:last-child button { white-space: normal; }
-.inventoryTable th:last-child, .inventoryTable td:last-child { position: sticky; right: 0; z-index: 1; background: transparent; text-align: right; box-shadow: -1px 0 rgba(190,210,235,.25); -webkit-backdrop-filter: var(--dashboard-glass-blur); backdrop-filter: var(--dashboard-glass-blur); }
+.inventoryTable th:last-child, .inventoryTable td:last-child { background: transparent; text-align: right; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .inventoryTable td:last-child .rowActions { justify-content: flex-end; }
 .inventoryTable td:last-child .primaryButton { padding: 9px 10px; font-size: 11px; }
 .inventoryTable td { line-height: 1.5; }
@@ -867,3 +867,18 @@
 .primaryButton:not(:disabled):hover, .refreshBtn:not(:disabled):hover { background-color: #001f9c; color: #fff; }
 
 .container .navItem.active, .container .navItem:not(:disabled):hover { box-shadow: inset 3px 0 #fff, inset 0 1px 0 rgba(255,255,255,.3), 0 3px 9px rgba(25,54,116,.09); }
+
+/* Text actions deliberately have no glass tile or shadow, including interaction states. */
+.container button.textAction:not(:disabled),
+.container button.inlineLink:not(:disabled),
+.container button.textAction:not(:disabled):hover,
+.container button.inlineLink:not(:disabled):hover,
+.container button.textAction:not(:disabled):active,
+.container button.inlineLink:not(:disabled):active {
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 0;
+}
+.container button.textAction:not(:disabled):hover, .container button.inlineLink:not(:disabled):hover { text-decoration: underline; }

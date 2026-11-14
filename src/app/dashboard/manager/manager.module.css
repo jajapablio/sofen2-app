@@ -928,3 +928,9 @@
 
 /* Action cells share their surrounding glass surface instead of a white strip. */
 .dataTable th:last-child, .dataTable td:last-child { background: transparent; }
+
+.container button.textAction:not(:disabled), .container button.textAction:not(:disabled):hover, .container button.textAction:not(:disabled):active {
+    background: transparent; box-shadow: none; border: 0;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.container button.textAction:not(:disabled):hover { text-decoration: underline; }
