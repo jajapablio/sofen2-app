@@ -892,3 +892,8 @@
 }
 .container button.cancelButton:not(:disabled):hover { border-color: #4267a4; background-color: rgba(231,239,255,.9); }
 .container button.cancelButton:focus-visible { outline: 2px solid #0044ff; outline-offset: 3px; }
+
+/* Match the landing page wordmark: align the text with the P symbol's baseline. */
+.logo { align-items: flex-end; }
+.logoIcon { width: 40px; height: 40px; flex: 0 0 40px; margin-right: -5px; object-fit: contain; }
+.logoText { font-size: 18px; transform: translateY(5px); }
