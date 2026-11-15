@@ -384,6 +384,7 @@ export default function ManagerWorkspace({ requiredRole }) {
                             <div className={styles.userAvatar}>{initials}</div>
                             <div className={styles.userInfo}>
                                 <h4>{profile?.full_name || workspaceRole}</h4>
+                                <p className={styles.staffRole}>{workspaceRole}</p>
                                 <p>{storeName || 'Store not assigned'}</p>
                             </div>
                             <button type="button" className={styles.logoutButton} onClick={handleLogout} aria-label="Log out" title="Log out">
