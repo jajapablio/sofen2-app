@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PasswordResetDialog from './PasswordResetDialog';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -10,6 +10,7 @@ export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitc
     const [identifier, setIdentifier] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const resetTrigger = useRef(null);
     const [resetOpen, setResetOpen] = useState(false);
     const [resetNotice, setResetNotice] = useState('');
     const router = useRouter();
@@ -71,6 +72,7 @@ export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitc
     return (
         <div className="form-container active">
             {resetOpen && <PasswordResetDialog
+                returnFocusRef={resetTrigger}
                 initialEmail={identifier.includes('@') ? identifier.trim() : ''}
                 onClose={() => setResetOpen(false)}
                 onComplete={(message) => { setResetOpen(false); setFeedback(''); setResetNotice(message); }}
@@ -101,7 +103,7 @@ export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitc
 
                 <div className="form-options">
                     <span>Use your username or email.</span>
-                    <button type="button" className="forgot-pass" onClick={() => { setResetNotice(''); setResetOpen(true); }}>Forgot Password?</button>
+                    <button ref={resetTrigger} type="button" className="forgot-pass" onClick={() => { setResetNotice(''); setResetOpen(true); }}>Forgot Password?</button>
                 </div>
 
                 {resetNotice && <p className="authFeedback success" role="status">{resetNotice}</p>}

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import styles from './PasswordResetDialog.module.css';
 
-export default function PasswordResetDialog({ initialEmail, onClose, onComplete }) {
+export default function PasswordResetDialog({ initialEmail, onClose, onComplete, returnFocusRef }) {
     const dialog = useRef(null);
     const client = useRef(null);
     const [step, setStep] = useState('email');
@@ -20,14 +20,14 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete 
     const remaining = Math.max(0, Math.ceil((retryAt - now) / 1000));
 
     useEffect(() => {
-        const previousFocus = document.activeElement;
+        const previousFocus = returnFocusRef.current;
         dialog.current.showModal();
         return () => {
             // Recovery sessions stay in memory and never replace the login session.
             if (client.current) void client.current.auth.signOut({ scope: 'local' });
             previousFocus?.focus();
         };
-    }, []);
+    }, [returnFocusRef]);
 
     useEffect(() => {
         if (!retryAt) return;
