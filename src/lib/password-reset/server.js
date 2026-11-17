@@ -67,7 +67,23 @@ export async function handleReset(request, action) {
                         }),
                         signal: AbortSignal.timeout(10000),
                     });
-                    if (!response.ok) throw new Error('Email delivery failed.');
+                    if (!response.ok) {
+                        const detail = (await response.text()).toLowerCase();
+                        // Log only fixed diagnostic labels, never provider response content.
+                        const reasons = [
+                            ['non-browser', 'enable_non_browser_requests'],
+                            ['private key', 'check_private_key'],
+                            ['public key', 'check_public_key'],
+                            ['user_id', 'check_public_key'],
+                            ['service', 'check_service_id_or_connection'],
+                            ['template', 'check_template_id'],
+                            ['recipient', 'check_template_recipient'],
+                            ['quota', 'emailjs_quota_exceeded'],
+                        ];
+                        const reason = reasons.find(([pattern]) => detail.includes(pattern))?.[1] || 'provider_rejected';
+                        console.error('EmailJS delivery rejected', { status: response.status, reason });
+                        throw new Error('Email delivery failed.');
+                    }
                 } catch {
                     // Do not reveal account existence via provider errors.
                     await rpc(admin, 'invalidate_password_reset', { p_id: challengeId });
