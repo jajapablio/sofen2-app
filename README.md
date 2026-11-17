@@ -83,3 +83,63 @@ The service worker caches only the offline page and public icons. Account pages,
 ### Purchase order approval
 
 Purchase-order permission hardening is applied to the connected pos database. For other databases, run `supabase/purchase_order_approvals.sql` to replace permissive purchase-order policies with store-scoped reads/requests and admin-only approval. Managers create manual orders with `generated_by_ml=false`. Admin → Inventory lists the assigned store’s orders with Approve order actions and a pending navigation count. Both dashboards refresh order statuses every 15 seconds; approval does not receive stock or increase inventory.
+
+### Password reset with EmailJS
+
+Forgot Password opens a popup: registered email → Send code → Verify code → new password.
+EmailJS delivers the email. The server generates an 8-digit code, stores only an HMAC
+of the code, and verifies it in Postgres. Supabase Auth stores accounts and updates the
+password only after successful verification; its recovery email service is not used.
+
+#### One-time setup
+
+1. Create an [EmailJS account](https://www.emailjs.com/) and connect an email service.
+2. Create a template. Set **To Email** to `{{to_email}}`, use a subject such as
+   `Your PredictPOS password reset code`, and copy the body from
+   `supabase/templates/emailjs-password-reset.html`. Keep the recipient dynamic;
+   do not set it to your own email address.
+3. In EmailJS account security settings, enable requests from non-browser apps and
+   require the private key for API requests. The app uses EmailJS's REST API from
+   the server. Check your provider/account limits and email delivery configuration.
+4. Set these **server-only** variables in `.env.local` and your deployment environment:
+   `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, `EMAILJS_PUBLIC_KEY`,
+   `EMAILJS_PRIVATE_KEY`, and `PASSWORD_RESET_SECRET` (generate using
+   `openssl rand -hex 32`). Never prefix these with `NEXT_PUBLIC_`. Existing
+   `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are also required.
+5. Apply `supabase/migrations/20261117080042_emailjs_password_reset.sql` to the
+   app's existing Supabase database as the project owner. It creates new recovery
+   tables in a private schema and service-role-only RPCs; existing sales/account
+   tables are preserved. Do not run the empty base setup.sql on a new database.
+6. Redeploy with the environment variables configured. This does not require
+   changing Supabase's Reset Password email template.
+
+Codes expire after 10 minutes and lock after 5 incorrect attempts. Verification
+exchanges a code for a random, single-use reset token valid for up to 5 minutes.
+Sending a new code invalidates the previous challenge for that email. The database
+enforces a 60-second resend cooldown, 5 requests/hour per email, and 20/hour per IP.
+On Vercel, the IP comes from Vercel's overwritten `x-vercel-forwarded-for` header.
+Other production hosts use a shared bucket until a trusted proxy IP integration is
+implemented; do not replace it with untrusted client headers.
+
+Only existing, confirmed, non-banned Auth accounts receive codes; unknown emails
+receive the same generic response and never create accounts. EmailJS delivery
+failures also return a generic response to avoid revealing account existence; check
+server logs and EmailJS delivery history when troubleshooting. Provider-wide EmailJS
+quotas still apply. Supabase's configured password policy is enforced during update.
+The reset token is held only in popup memory; closing the popup discards it. If the
+password update fails after consuming a token, request a new code. No Auth session is
+created by this flow, and existing login state in the browser is left intact.
+
+#### Verification
+
+Use a registered test account: request a code, confirm the recipient and 8-digit code,
+reject an incorrect/expired code, verify the correct code, reject mismatched passwords,
+set the new password, then sign in. Verify resending invalidates old codes, five failed
+attempts lock the challenge, a used code/token cannot be replayed, and unknown emails
+do not create accounts. Check EmailJS delivery failures, server rate limits, keyboard
+focus/Escape, and mobile layout. Real email delivery requires the setup above.
+
+Database regression checks are in `supabase/tests/password_reset.sql`; run them as
+owner on a test database after applying the migration (for example,
+`psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/password_reset.sql`).
+The suite rolls back its temporary Auth account and recovery records.
