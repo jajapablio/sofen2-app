@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PasswordResetDialog from './PasswordResetDialog';
 import { getSupabaseClient } from '../lib/supabase/client';
 
 export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitchToSignup }) {
@@ -9,6 +10,8 @@ export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitc
     const [identifier, setIdentifier] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [resetOpen, setResetOpen] = useState(false);
+    const [resetNotice, setResetNotice] = useState('');
     const router = useRouter();
 
     const handleSubmit = async (e) => {
@@ -65,27 +68,13 @@ export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitc
         }
     };
 
-    const handlePasswordReset = async () => {
-        const emailAddress = identifier.trim().toLowerCase();
-        if (!emailAddress.includes('@')) {
-            setFeedback('Enter your email address to request a password reset.');
-            return;
-        }
-
-        try {
-            const supabase = getSupabaseClient();
-            const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
-                redirectTo: window.location.origin,
-            });
-            if (error) throw error;
-            setFeedback('If an account exists for that email, a password reset link has been sent.');
-        } catch (error) {
-            setFeedback(error.message || 'Unable to request a password reset.');
-        }
-    };
-
     return (
         <div className="form-container active">
+            {resetOpen && <PasswordResetDialog
+                initialEmail={identifier.includes('@') ? identifier.trim() : ''}
+                onClose={() => setResetOpen(false)}
+                onComplete={(message) => { setResetOpen(false); setFeedback(''); setResetNotice(message); }}
+            />}
             <form onSubmit={handleSubmit}>
                 <div className="input-group">
                     <label className="input-label" htmlFor="login-identifier">Username or Email</label>
@@ -112,9 +101,10 @@ export default function LoginForm({ notice, signupEnabled, signupStatus, onSwitc
 
                 <div className="form-options">
                     <span>Use your username or email.</span>
-                    <button type="button" className="forgot-pass" onClick={handlePasswordReset}>Forgot Password?</button>
+                    <button type="button" className="forgot-pass" onClick={() => { setResetNotice(''); setResetOpen(true); }}>Forgot Password?</button>
                 </div>
 
+                {resetNotice && <p className="authFeedback success" role="status">{resetNotice}</p>}
                 {notice && <p className="authFeedback success" role="status">{notice}</p>}
                 {feedback && <p className="authFeedback error" role="alert">{feedback}</p>}
                 {signupStatus === 'unavailable' && signupEnabled && <p className="authFeedback warning" role="status">Signup availability could not be checked. The server will verify when you submit.</p>}

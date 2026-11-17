@@ -83,3 +83,19 @@ The service worker caches only the offline page and public icons. Account pages,
 ### Purchase order approval
 
 Purchase-order permission hardening is applied to the connected pos database. For other databases, run `supabase/purchase_order_approvals.sql` to replace permissive purchase-order policies with store-scoped reads/requests and admin-only approval. Managers create manual orders with `generated_by_ml=false`. Admin → Inventory lists the assigned store’s orders with Approve order actions and a pending navigation count. Both dashboards refresh order statuses every 15 seconds; approval does not receive stock or increase inventory.
+
+### Password reset by email code
+
+Forgot Password opens a popup: registered email → Send code → Verify code → new password.
+The app uses Supabase recovery OTPs, never creates an account during recovery, and keeps the recovery session in memory separately from the login session.
+
+**Required hosted Supabase configuration:** In Authentication → Email Templates → Reset Password,
+copy `supabase/templates/recovery.html` into the email body and save it. The `{{ .Token }}`
+variable displays the recovery code; the default link-only template will not show the code.
+Configure email delivery/SMTP and OTP expiration in Supabase for your environment.
+The popup applies a 60-second resend cooldown; Supabase also enforces its configured server limits.
+
+Verify with an existing test account: request a code, check the email, reject an incorrect code,
+verify the correct code, reject mismatched passwords, reset the password, then sign in with it.
+Also check expired/reused codes, resend, changing the email, Escape/Close, and keyboard focus.
+Unknown emails receive the same generic response and do not create accounts.
