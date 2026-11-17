@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import styles from './PasswordResetDialog.module.css';
 
 export default function PasswordResetDialog({ initialEmail, onClose, onComplete, returnFocusRef }) {
     const dialog = useRef(null);
-    const client = useRef(null);
+    const [challengeId, setChallengeId] = useState('');
+    const [resetToken, setResetToken] = useState('');
     const [step, setStep] = useState('email');
     const [email, setEmail] = useState(initialEmail);
     const [code, setCode] = useState('');
@@ -23,8 +23,6 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete,
         const previousFocus = returnFocusRef.current;
         dialog.current.showModal();
         return () => {
-            // Recovery sessions stay in memory and never replace the login session.
-            if (client.current) void client.current.auth.signOut({ scope: 'local' });
             previousFocus?.focus();
         };
     }, [returnFocusRef]);
@@ -35,16 +33,14 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete,
         return () => clearInterval(timer);
     }, [retryAt]);
 
-    const getClient = () => {
-        if (!client.current) {
-            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-            const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-            if (!url || !key) throw new Error('Password reset is not configured. Contact your administrator.');
-            client.current = createClient(url, key, {
-                auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-            });
-        }
-        return client.current;
+    const api = async (action, values) => {
+        const response = await fetch(`/api/auth/password-reset/${action}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(values),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Unable to reset your password.');
+        return result;
     };
 
     const sendCode = async () => {
@@ -52,8 +48,9 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete,
         setError('');
         setMessage('');
         try {
-            const { error } = await getClient().auth.resetPasswordForEmail(email.trim().toLowerCase());
-            if (error) throw error;
+            const result = await api('request', { email: email.trim().toLowerCase() });
+            setChallengeId(result.challengeId);
+            setResetToken('');
             setEmail(email.trim().toLowerCase());
             setCode('');
             setStep('code');
@@ -81,16 +78,13 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete,
         setBusy(true);
         try {
             if (step === 'code') {
-                const { data, error } = await getClient().auth.verifyOtp({
-                    email, token: code.trim(), type: 'recovery',
-                });
-                if (error || !data.session) throw new Error('This code is invalid or expired. Try again or request a new code.');
+                const result = await api('verify', { challengeId, code: code.trim() });
+                setResetToken(result.resetToken);
                 setCode('');
                 setStep('password');
             } else {
-                const { error } = await getClient().auth.updateUser({ password });
-                if (error) throw error;
-                await getClient().auth.signOut({ scope: 'local' });
+                await api('complete', { challengeId, resetToken, password });
+                setResetToken('');
                 onComplete('Your password has been reset. Sign in with your new password.');
             }
         } catch (error) {
@@ -109,10 +103,10 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete,
             <form onSubmit={submit}>
                 <fieldset disabled={busy} className={styles.fields}>
                     {step === 'email' && <label>Email address<input autoFocus type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>}
-                    {step === 'code' && <label>Reset code<input autoFocus key="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]+" required value={code} onChange={(event) => setCode(event.target.value)} /></label>}
+                    {step === 'code' && <label>Reset code<input autoFocus key="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" minLength={8} maxLength={8} required value={code} onChange={(event) => setCode(event.target.value)} /></label>}
                     {step === 'password' && <>
-                        <label>New password<input autoFocus key="password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-                        <label>Confirm new password<input type="password" autoComplete="new-password" minLength={8} required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label>
+                        <label>New password<input autoFocus key="password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required value={password} onChange={(event) => setPassword(event.target.value)} /></label>
+                        <label>Confirm new password<input type="password" autoComplete="new-password" minLength={8} maxLength={128} required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label>
                         <p className={styles.hint}>Use at least 8 characters.</p>
                     </>}
                     {error && <p className={styles.error} role="alert">{error}</p>}
@@ -120,7 +114,7 @@ export default function PasswordResetDialog({ initialEmail, onClose, onComplete,
                     <button type="submit" className="btn-primary">{busy ? 'Please wait…' : step === 'email' ? 'Send code' : step === 'code' ? 'Verify code' : 'Reset password'}</button>
                     {step === 'code' && <div className={styles.actions}>
                         <button type="button" disabled={remaining > 0} onClick={sendCode}>{remaining > 0 ? `Resend in ${remaining}s` : 'Resend code'}</button>
-                        <button type="button" onClick={() => { setStep('email'); setCode(''); setError(''); setMessage(''); }}>Change email</button>
+                        <button type="button" onClick={() => { setStep('email'); setCode(''); setChallengeId(''); setResetToken(''); setError(''); setMessage(''); }}>Change email</button>
                     </div>}
                 </fieldset>
             </form>
