@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import SignupVerification from './SignupVerification';
 
 export default function SignupForm({ onSignup, onSwitchToLogin }) {
+    const [pendingRegistration, setPendingRegistration] = useState(null);
     const [showPass, setShowPass] = useState(false);
     const [showConfirmPass, setShowConfirmPass] = useState(false);
     const [feedback, setFeedback] = useState('');
@@ -35,7 +37,7 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Unable to create the account.');
 
-            onSignup('Administrator and store created. Sign in with your username or email.');
+            setPendingRegistration({ fullName, username, storeName, email, password, challengeId: result.challengeId });
         } catch (error) {
             setFeedback(error.message || 'Unable to create the account. Try again.');
         } finally {
@@ -43,13 +45,19 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
         }
     };
 
+    if (pendingRegistration) return <SignupVerification
+        registration={pendingRegistration}
+        onVerified={(message) => { setPendingRegistration(null); onSignup(message); }}
+        onBack={() => { setPendingRegistration(null); setFeedback(''); }}
+    />;
+
     return (
         <div className="form-container signup-form-container active">
             <form className="signup-form" onSubmit={handleSubmit}>
                 <div className="input-group">
                     <label className="input-label" htmlFor="signup-fullname">Full Name</label>
                     <i className="fas fa-id-card input-icon-left"></i>
-                    <input id="signup-fullname" type="text" name="fullname" placeholder="Enter your full name" autoComplete="name" required />
+                    <input id="signup-fullname" type="text" name="fullname" placeholder="Enter your full name" autoComplete="name" maxLength={120} required />
                 </div>
 
                 <div className="input-group">
@@ -67,7 +75,7 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
                 <div className="input-group">
                     <label className="input-label" htmlFor="signup-email">Email Address</label>
                     <i className="fas fa-envelope input-icon-left"></i>
-                    <input id="signup-email" type="email" name="email" placeholder="you@example.com" autoComplete="email" required />
+                    <input id="signup-email" type="email" name="email" placeholder="you@example.com" autoComplete="email" maxLength={254} required />
                 </div>
 
                 <div className="input-group">
@@ -80,6 +88,7 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
                         placeholder="••••••••" 
                         autoComplete="new-password"
                         minLength={8}
+                        maxLength={128}
                         required 
                     />
                     <i 
@@ -98,6 +107,7 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
                         placeholder="••••••••" 
                         autoComplete="new-password"
                         minLength={8}
+                        maxLength={128}
                         required 
                     />
                     <i 
@@ -107,9 +117,8 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
                 </div>
 
                 {feedback && <p className="authFeedback error" role="alert">{feedback}</p>}
-                {feedback && <p className="authFeedback error" role="alert">{feedback}</p>}
                 <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating account…' : 'Create Account'}
+                    {isSubmitting ? 'Sending verification code…' : 'Create Account'}
                 </button>
             </form>
 

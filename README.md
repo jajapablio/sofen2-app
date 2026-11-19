@@ -143,3 +143,36 @@ Database regression checks are in `supabase/tests/password_reset.sql`; run them 
 owner on a test database after applying the migration (for example,
 `psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/password_reset.sql`).
 The suite rolls back its temporary Auth account and recovery records.
+
+### Signup email verification
+
+Create Account now sends an EmailJS code and shows a verification screen. A successful
+code verification is required before creating the Supabase Auth account, administrator
+profile, store, and audit entry. Signup does not return a session. Existing accounts
+are not re-verified or modified. This proves access to the mailbox; it does not test
+whether a Gmail address is available for registration or prove a person's legal identity.
+All valid email providers are supported.
+
+Apply `supabase/migrations/20261119103732_signup_email_verification.sql` before deploying.
+Create an EmailJS signup-verification template using
+`supabase/templates/emailjs-signup-verification.html`, set **To Email** to `{{to_email}}`,
+use a subject such as “Verify your PredictPOS email”, and set the server-only
+`EMAILJS_SIGNUP_TEMPLATE_ID` in the deployment environment. It uses the existing
+EmailJS service/keys and `PASSWORD_RESET_SECRET` with a separate signup HMAC namespace.
+Never reuse a password-reset email body for signup. Do not expose secrets to the browser.
+
+Codes expire after 10 minutes, allow 5 attempts, and are consumed once atomically.
+Resending replaces the previous challenge. Signup requests are limited to one per
+60 seconds, 5/hour per email, and 20/hour per trusted Vercel IP. Other production hosts
+use a shared IP bucket until a trusted proxy integration is configured. Codes and
+passwords are never saved in plaintext in the verification tables. Form values are
+kept only in component memory while the verification screen is open. Refreshing or
+editing signup details starts over. If account creation fails after proof is consumed,
+request a fresh code. Provisioning the store, profile and audit is transactional.
+
+Database regression checks: `supabase/tests/signup_verification.sql` on a test database.
+Manual acceptance: submit signup → receive code → reject wrong code → verify correct
+code → confirm one account/store → sign in. Also cover expiry, resend invalidation,
+email mismatch, replay, request limits, duplicate username/email, delivery failure,
+mobile layout and keyboard focus. Do not mark mailbox-delivery or live account-creation
+tests as passed without exercising them with a dedicated test account.
