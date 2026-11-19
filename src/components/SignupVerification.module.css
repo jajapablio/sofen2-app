@@ -1,0 +1,9 @@
+.verification { min-width: 0; }
+.verification h2 { margin: 0 0 18px; color: #102448; font-size: 26px; }
+.verification > p { line-height: 1.6; overflow-wrap: anywhere; }
+.verification form { margin-top: 24px; }
+.verification input.code { padding: 16px; letter-spacing: .3em; font-size: 22px; cursor: text; }
+.actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+.actions button:disabled { opacity: .6; cursor: default; }
+.hint { font-size: 13px; color: #4a5871; margin-top: 24px; }
+.verification button:focus-visible, .verification input:focus-visible { outline: 3px solid #0044ff; outline-offset: 3px; }
