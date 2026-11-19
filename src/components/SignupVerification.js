@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import styles from './SignupVerification.module.css';
+import AuthDialog from './AuthDialog';
+import styles from './AuthDialog.module.css';
 
-export default function SignupVerification({ registration, onVerified, onBack }) {
+export default function SignupVerification({ registration, onVerified, onBack, returnFocusRef }) {
     const [challengeId, setChallengeId] = useState(registration.challengeId);
     const [code, setCode] = useState('');
     const [feedback, setFeedback] = useState('A verification code was sent. Check your inbox and spam folder.');
@@ -52,27 +53,27 @@ export default function SignupVerification({ registration, onVerified, onBack })
     };
 
     return (
-        <div className={`form-container active ${styles.verification}`}>
-            <h2>Verify your email</h2>
-            <p id="signup-verification-description">Enter the 8-digit code sent to <strong>{registration.email}</strong>. It expires in 10 minutes.</p>
+        <AuthDialog title="Verify your email" eyebrow="Email verification" busy={busy} onClose={onBack} returnFocusRef={returnFocusRef}
+            description={<>Enter the 8-digit code sent to <strong>{registration.email}</strong></>}
+            hint="Your code expires in 10 minutes. Your account is created after verification.">
             <form onSubmit={(event) => { event.preventDefault(); submit('verify'); }}>
-                <div className="input-group">
-                    <label className="input-label" htmlFor="signup-verification-code">Verification code</label>
+                <fieldset className={styles.fields} disabled={busy}>
+                    <label htmlFor="signup-verification-code">Verification code
                     <input ref={input} id="signup-verification-code" className={styles.code} type="text" inputMode="numeric" autoComplete="one-time-code"
-                        aria-describedby="signup-verification-description" pattern="[0-9]{8}" minLength={8} maxLength={8} required
+                        placeholder="00000000" pattern="[0-9]{8}" minLength={8} maxLength={8} required
                         value={code} onChange={(event) => setCode(event.target.value)} disabled={busy} />
-                </div>
-                {feedback && <p className="authFeedback success" role="status">{feedback}</p>}
-                {error && <p className="authFeedback error" role="alert">{error}</p>}
-                <button type="submit" className="btn-primary" disabled={busy}>{busy ? 'Please wait…' : 'Verify email & create account'}</button>
+                    </label>
+                {feedback && <p className={styles.message} role="status">{feedback}</p>}
+                {error && <p className={styles.error} role="alert">{error}</p>}
+                <button type="submit" className={styles.primary} disabled={busy}>{busy ? 'Please wait…' : 'Verify email & create account'}</button>
                 <div className={styles.actions}>
-                    <button type="button" className="btn-text-link" disabled={busy || remaining > 0} onClick={() => submit('request')}>
+                    <button type="button" disabled={busy || remaining > 0} onClick={() => submit('request')}>
                         {remaining > 0 ? `Resend in ${remaining}s` : 'Resend code'}
                     </button>
-                    <button type="button" className="btn-text-link" disabled={busy} onClick={onBack}>Edit signup details</button>
+                    <button type="button" disabled={busy} onClick={onBack}>Edit signup details</button>
                 </div>
+                </fieldset>
             </form>
-            <p className={styles.hint}>Your account and store are created only after your email is verified.</p>
-        </div>
+        </AuthDialog>
     );
 }

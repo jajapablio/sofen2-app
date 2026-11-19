@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import SignupVerification from './SignupVerification';
 
 export default function SignupForm({ onSignup, onSwitchToLogin }) {
+    const submitButton = useRef(null);
     const [pendingRegistration, setPendingRegistration] = useState(null);
     const [showPass, setShowPass] = useState(false);
     const [showConfirmPass, setShowConfirmPass] = useState(false);
@@ -45,13 +46,13 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
         }
     };
 
-    if (pendingRegistration) return <SignupVerification
-        registration={pendingRegistration}
-        onVerified={(message) => { setPendingRegistration(null); onSignup(message); }}
-        onBack={() => { setPendingRegistration(null); setFeedback(''); }}
-    />;
-
     return (
+        <>
+        {pendingRegistration && <SignupVerification
+            registration={pendingRegistration} returnFocusRef={submitButton}
+            onVerified={(message) => { setPendingRegistration(null); onSignup(message); }}
+            onBack={() => setPendingRegistration(null)}
+        />}
         <div className="form-container signup-form-container active">
             <form className="signup-form" onSubmit={handleSubmit}>
                 <div className="input-group">
@@ -117,7 +118,7 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
                 </div>
 
                 {feedback && <p className="authFeedback error" role="alert">{feedback}</p>}
-                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                <button ref={submitButton} type="submit" className="btn-primary" disabled={isSubmitting}>
                     {isSubmitting ? 'Sending verification code…' : 'Create Account'}
                 </button>
             </form>
@@ -127,5 +128,6 @@ export default function SignupForm({ onSignup, onSwitchToLogin }) {
                 <button type="button" className="btn-text-link" onClick={onSwitchToLogin}>Login</button>
             </div>
         </div>
+        </>
     );
 }

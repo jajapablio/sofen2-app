@@ -166,8 +166,8 @@ Resending replaces the previous challenge. Signup requests are limited to one pe
 60 seconds, 5/hour per email, and 20/hour per trusted Vercel IP. Other production hosts
 use a shared IP bucket until a trusted proxy integration is configured. Codes and
 passwords are never saved in plaintext in the verification tables. Form values are
-kept only in component memory while the verification screen is open. Refreshing or
-editing signup details starts over. If account creation fails after proof is consumed,
+kept only in component memory while the verification screen is open. Refreshing discards signup details. Closing the verification popup returns to the
+editable signup form; submitting it again requests a new code. If account creation fails after proof is consumed,
 request a fresh code. Provisioning the store, profile and audit is transactional.
 
 Database regression checks: `supabase/tests/signup_verification.sql` on a test database.
